@@ -11,7 +11,7 @@ type Chunk struct {
 
 func initChunk(chunk *Chunk) {
 	chunk.code = nil
-	initValueArray(chunk.constants)
+	initValueArray(&chunk.constants)
 }
 
 func writeChunk(chunk *Chunk, code uint8) {
@@ -19,11 +19,11 @@ func writeChunk(chunk *Chunk, code uint8) {
 }
 
 func addConstant(chunk *Chunk, value Value) int {
-	writeValueArray(chunk.constants, value)
+	writeValueArray(&chunk.constants, value)
 	return len(chunk.constants.values) - 1
 }
 
 func freeChunk(chunk *Chunk) {
-	freeValueArrary(chunk.constants)
+	freeValueArrary(&chunk.constants)
 	initChunk(chunk)
 }
