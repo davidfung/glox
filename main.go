@@ -1,6 +1,8 @@
 package main
 
 func main() {
+	initVM()
+
 	var chunk Chunk
 	initChunk(&chunk)
 
@@ -11,5 +13,6 @@ func main() {
 	writeChunk(&chunk, OP_RETURN, 123) //TODO can we just pass chunk instead of &chunk?
 
 	disassembleChunk(&chunk, "test chunk")
+	freeVM()
 	freeChunk(&chunk)
 }
