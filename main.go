@@ -1,12 +1,15 @@
 package main
 
-import "fmt"
-
 func main() {
-	fmt.Println("the beginning of glox starts here...")
 	var chunk Chunk
 	initChunk(&chunk)
-	writeChunk(&chunk, OP_RETURN) //TODO can we just pass chunk instead of &chunk?
+
+	constant := addConstant(&chunk, 1.2)
+	writeChunk(&chunk, OP_CONSTANT, 123)
+	writeChunk(&chunk, uint8(constant), 123)
+
+	writeChunk(&chunk, OP_RETURN, 123) //TODO can we just pass chunk instead of &chunk?
+
 	disassembleChunk(&chunk, "test chunk")
 	freeChunk(&chunk)
 }

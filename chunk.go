@@ -1,21 +1,25 @@
 package main
 
 const (
-	OP_RETURN = iota
+	OP_CONSTANT = iota
+	OP_RETURN
 )
 
 type Chunk struct {
 	code      []uint8
+	lines     []int
 	constants ValueArray
 }
 
 func initChunk(chunk *Chunk) {
 	chunk.code = nil
+	chunk.lines = nil
 	initValueArray(&chunk.constants)
 }
 
-func writeChunk(chunk *Chunk, code uint8) {
+func writeChunk(chunk *Chunk, code uint8, line int) {
 	chunk.code = append(chunk.code, code)
+	chunk.lines = append(chunk.lines, line)
 }
 
 func addConstant(chunk *Chunk, value Value) int {

@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Value float64
 
 type ValueArray struct {
@@ -16,4 +18,8 @@ func writeValueArray(array *ValueArray, value Value) {
 
 func freeValueArrary(array *ValueArray) {
 	initValueArray(array)
+}
+
+func printValue(value Value) {
+	fmt.Printf("%g", value)
 }
