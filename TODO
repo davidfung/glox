@@ -1,1 +1,6 @@
+TODO
+
 [ ] new README, add glox from lox
+[ ] lowecase constants in chunk.go and vm.go
+    how did others do it?
+
