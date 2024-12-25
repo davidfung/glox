@@ -1,0 +1,5 @@
+glox is an implementation of lox in Go.
+
+Major difference compare to clox:
+1. Go has a gc, hence all memory related stuffs are gone.
+2. Go has no pointer arithmetic, hence need to use index.

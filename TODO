@@ -1,6 +1,7 @@
-TODO
+NEXT
+[ ] implement run()+
 
-[ ] new README, add glox from lox
+TODO
 [ ] lowecase constants in chunk.go and vm.go
     how did others do it?
 

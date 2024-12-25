@@ -13,6 +13,7 @@ func main() {
 	writeChunk(&chunk, OP_RETURN, 123) //TODO can we just pass chunk instead of &chunk?
 
 	disassembleChunk(&chunk, "test chunk")
+	interpret(&chunk)
 	freeVM()
 	freeChunk(&chunk)
 }
