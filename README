@@ -1,5 +1,10 @@
 glox is an implementation of lox in Go.
 
 Major difference compare to clox:
-1. Go has a gc, hence all memory related stuffs are gone.
-2. Go has no pointer arithmetic, hence need to use index.
+  - Go has a gc, hence all memory related stuffs are gone.
+  - Go has no pointer arithmetic, hence need to use index.
+  - Go does not have enum, so constants no type information.
+  - Go does not have inline, so define anonymous function in
+    function scope.
+  - Go does not have explicit conditional compilation, so at
+    compiler discretion.

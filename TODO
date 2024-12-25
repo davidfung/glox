@@ -4,4 +4,5 @@ NEXT
 TODO
 [ ] lowecase constants in chunk.go and vm.go
     how did others do it?
-
+    kOpConstant
+    k_OP_CONSTANT
