@@ -1,5 +1,7 @@
 package main
 
+const DEBUG_TRACE_EXECUTION = true
+
 func main() {
 	initVM()
 

@@ -39,6 +39,10 @@ func run() int {
 	}
 
 	for {
+		if DEBUG_TRACE_EXECUTION {
+			disassembleInstruction(vm.chunk, vm.ip)
+		}
+
 		instruction := readByte()
 		switch instruction {
 		case OP_CONSTANT:

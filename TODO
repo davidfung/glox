@@ -1,5 +1,6 @@
 NEXT
 [ ] implement run()+
+[ ] observe go repo how to main constants
 
 TODO
 [ ] lowecase constants in chunk.go and vm.go
