@@ -2,9 +2,13 @@ package main
 
 import "fmt"
 
+const STACK_MAX = 256
+
 type VM struct {
-	chunk *Chunk
-	ip    int
+	chunk    *Chunk
+	ip       int
+	stack    [STACK_MAX]Value
+	stackTop int
 }
 
 const (
@@ -15,10 +19,25 @@ const (
 
 var vm VM
 
+func resetStack() {
+	vm.stackTop = 0
+}
+
 func initVM() {
+	resetStack()
 }
 
 func freeVM() {
+}
+
+func push(value Value) {
+	vm.stack[vm.stackTop] = value
+	vm.stackTop++
+}
+
+func pop() Value {
+	vm.stackTop--
+	return vm.stack[vm.stackTop]
 }
 
 func interpret(chunk *Chunk) int {
@@ -40,6 +59,13 @@ func run() int {
 
 	for {
 		if DEBUG_TRACE_EXECUTION {
+			fmt.Printf("         ")
+			for i := 0; i < vm.stackTop; i++ {
+				fmt.Printf("[")
+				printValue(vm.stack[i])
+				fmt.Printf("]")
+			}
+			fmt.Printf("\n")
 			disassembleInstruction(vm.chunk, vm.ip)
 		}
 
@@ -47,9 +73,10 @@ func run() int {
 		switch instruction {
 		case OP_CONSTANT:
 			constant := readConstant()
-			printValue(constant)
-			fmt.Printf("\n")
+			push(constant)
 		case OP_RETURN:
+			printValue(pop())
+			fmt.Printf("\n")
 			return INTERPRET_OK
 		}
 	}
