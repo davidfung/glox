@@ -17,6 +17,13 @@ const (
 	INTERPRET_RUNTIME_ERROR
 )
 
+const (
+	BINARY_OP_ADD = iota
+	BINARY_OP_SUBTRACT
+	BINARY_OP_MULTIPLY
+	BINARY_OP_DIVIDE
+)
+
 var vm VM
 
 func resetStack() {
@@ -38,6 +45,21 @@ func push(value Value) {
 func pop() Value {
 	vm.stackTop--
 	return vm.stack[vm.stackTop]
+}
+
+func binary_op(op int) {
+	b := pop()
+	a := pop()
+	switch op {
+	case BINARY_OP_ADD:
+		push(a + b)
+	case BINARY_OP_SUBTRACT:
+		push(a - b)
+	case BINARY_OP_MULTIPLY:
+		push(a * b)
+	case BINARY_OP_DIVIDE:
+		push(a / b)
+	}
 }
 
 func interpret(chunk *Chunk) int {
@@ -74,6 +96,16 @@ func run() int {
 		case OP_CONSTANT:
 			constant := readConstant()
 			push(constant)
+		case OP_ADD:
+			binary_op(BINARY_OP_ADD)
+		case OP_SUBTRACT:
+			binary_op(BINARY_OP_SUBTRACT)
+		case OP_MULTIPLY:
+			binary_op(BINARY_OP_MULTIPLY)
+		case OP_DIVIDE:
+			binary_op(BINARY_OP_DIVIDE)
+		case OP_NEGATE:
+			push(-pop())
 		case OP_RETURN:
 			printValue(pop())
 			fmt.Printf("\n")
