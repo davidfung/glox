@@ -1,5 +1,5 @@
 NEXT
-[ ] implement run()+
+[ ] implement repl(), runFile()
 [ ] observe go repo how to main constants
 
 TODO
