@@ -1,3 +1,3 @@
-module github.com/davidfung/glox
+module glox
 
 go 1.23.2
