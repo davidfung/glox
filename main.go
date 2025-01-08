@@ -9,6 +9,10 @@ import (
 
 const DEBUG_TRACE_EXECUTION = true
 
+const versionMajor = 0
+const versionMinor = 1
+const versionPatch = 0
+
 func repl() {
 	input := bufio.NewScanner(os.Stdin)
 	for {
@@ -41,7 +45,13 @@ func runFile(path string) {
 
 }
 
+func printVersion() {
+	fmt.Printf("glox version %d.%d.%d\n", versionMajor, versionMinor, versionPatch)
+}
+
 func main() {
+	printVersion()
+
 	initVM()
 
 	if len(os.Args) == 1 {
