@@ -65,14 +65,9 @@ func binary_op(op int) {
 func interpret(source string) int {
 	fmt.Println("Interpreting...")
 	fmt.Println(source)
+	compile(source)
 	return INTERPRET_OK
 }
-
-// func interpret(chunk *Chunk) int {
-// 	vm.chunk = chunk
-// 	vm.ip = 0
-// 	return run()
-// }
 
 func run() int {
 	readByte := func() uint8 {
