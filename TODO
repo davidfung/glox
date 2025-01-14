@@ -1,6 +1,6 @@
 NEXT
-[ ] implement repl(), runFile()
-[ ] observe go repo how to main constants
+[ ] implement scanToken()
+[ ] fix printf in for loop in compile()
 
 TODO
 [ ] lowecase constants in chunk.go and vm.go
