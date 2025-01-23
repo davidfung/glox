@@ -52,56 +52,90 @@ const (
 )
 
 type Token struct {
-	type_  int
+	source *string
+	typ    int
 	start  int
 	length int
 	line   int
 }
 
 type Scanner struct {
-	source  string
+	source  *string
 	start   int
 	current int
-	end     int
 	line    int
 }
 
 var scanner Scanner
 
 func initScanner(source string) {
-	scanner.source = source
+	scanner.source = &source
 	scanner.start = 0
 	scanner.current = 0
-	scanner.end = len(source) - 1
 	scanner.line = 1
 }
 
-func scanToken() {
+func scanToken() Token {
 	scanner.start = scanner.current
 	if isAtEnd() {
 		return makeToken(TOKEN_EOF)
 	}
+
+	c := advance()
+
+	switch {
+	case c == '(':
+		return makeToken(TOKEN_LEFT_PAREN)
+	case c == ')':
+		return makeToken(TOKEN_RIGHT_PAREN)
+	case c == '{':
+		return makeToken(TOKEN_LEFT_BRACE)
+	case c == '}':
+		return makeToken(TOKEN_RIGHT_BRACE)
+	case c == ';':
+		return makeToken(TOKEN_SEMICOLON)
+	case c == ',':
+		return makeToken(TOKEN_COMMA)
+	case c == '.':
+		return makeToken(TOKEN_DOT)
+	case c == '-':
+		return makeToken(TOKEN_MINUS)
+	case c == '+':
+		return makeToken(TOKEN_PLUS)
+	case c == '/':
+		return makeToken(TOKEN_SLASH)
+	case c == '*':
+		return makeToken(TOKEN_STAR)
+	}
+
 	return errorToken("Unexpected character.")
 }
 
 func isAtEnd() bool {
-	return scanner.start >= scanner.end
+	return scanner.current >= len(*scanner.source)
+}
+
+func advance() byte {
+	scanner.current++
+	return (*scanner.source)[scanner.current-1]
 }
 
 func makeToken(typ int) Token {
 	var token Token
-	token.type_ = typ
+	token.source = scanner.source
+	token.typ = typ
 	token.start = scanner.start
 	token.length = scanner.current - scanner.start
 	token.line = scanner.line
 	return token
 }
 
-func errorToken(message string) Token {
+func errorToken(msg string) Token {
 	var token Token
-	token.type_ = TOKEN_ERROR
-	token.start = scanner.start
-	token.length = scanner.current - scanner.start
+	token.source = &msg
+	token.typ = TOKEN_ERROR
+	token.start = 0
+	token.length = len(msg)
 	token.line = scanner.line
 	return token
 }

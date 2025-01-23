@@ -1,12 +1,3 @@
 NEXT
-[ ] implement scanToken()
-    - *string
-    - change vm chunck implementation to use pointer too?
-[ ] refactor scanner.type_ to scanner.typ
-[ ] fix printf in for loop in compile()
 
 TODO
-[ ] lowecase constants in chunk.go and vm.go
-    how did others do it?
-    kOpConstant
-    k_OP_CONSTANT

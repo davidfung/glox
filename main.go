@@ -15,6 +15,7 @@ const versionPatch = 0
 
 func repl() {
 	input := bufio.NewScanner(os.Stdin)
+	interpret("+++")
 	for {
 		fmt.Printf("> ")
 		if !input.Scan() {
