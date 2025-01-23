@@ -59,15 +59,49 @@ type Token struct {
 }
 
 type Scanner struct {
+	source  string
 	start   int
 	current int
+	end     int
 	line    int
 }
 
 var scanner Scanner
 
 func initScanner(source string) {
+	scanner.source = source
 	scanner.start = 0
 	scanner.current = 0
+	scanner.end = len(source) - 1
 	scanner.line = 1
+}
+
+func scanToken() {
+	scanner.start = scanner.current
+	if isAtEnd() {
+		return makeToken(TOKEN_EOF)
+	}
+	return errorToken("Unexpected character.")
+}
+
+func isAtEnd() bool {
+	return scanner.start >= scanner.end
+}
+
+func makeToken(typ int) Token {
+	var token Token
+	token.type_ = typ
+	token.start = scanner.start
+	token.length = scanner.current - scanner.start
+	token.line = scanner.line
+	return token
+}
+
+func errorToken(message string) Token {
+	var token Token
+	token.type_ = TOKEN_ERROR
+	token.start = scanner.start
+	token.length = scanner.current - scanner.start
+	token.line = scanner.line
+	return token
 }
