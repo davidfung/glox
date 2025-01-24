@@ -7,15 +7,16 @@ func compile(source string) {
 	line := -1
 	for {
 		token := scanToken()
-		if token.typ == TOKEN_EOF {
-			break
-		}
 		if token.line != line {
 			fmt.Printf("%4d ", token.line)
 			line = token.line
 		} else {
 			fmt.Printf("   | ")
 		}
-		fmt.Printf("%2d '%.*s'\n", token.typ, token.length, string((*token.source)[token.start]))
+		fmt.Printf("%2d '%s'\n", token.typ, string((*token.source)[token.start:token.start+token.length]))
+
+		if token.typ == TOKEN_EOF {
+			break
+		}
 	}
 }

@@ -106,6 +106,12 @@ func scanToken() Token {
 		return makeToken(TOKEN_SLASH)
 	case c == '*':
 		return makeToken(TOKEN_STAR)
+	case c == '!':
+		if match('=') {
+			return makeToken(TOKEN_BANG_EQUAL)
+		} else {
+			return makeToken(TOKEN_BANG)
+		}
 	}
 
 	return errorToken("Unexpected character.")
@@ -120,6 +126,17 @@ func advance() byte {
 	return (*scanner.source)[scanner.current-1]
 }
 
+func match(expected byte) bool {
+	if isAtEnd() {
+		return false
+	}
+	if (*scanner.source)[scanner.current] != expected {
+		return false
+	}
+	scanner.current++
+	return true
+}
+
 func makeToken(typ int) Token {
 	var token Token
 	token.source = scanner.source
@@ -127,6 +144,14 @@ func makeToken(typ int) Token {
 	token.start = scanner.start
 	token.length = scanner.current - scanner.start
 	token.line = scanner.line
+
+	if typ == TOKEN_EOF {
+		s := ""
+		token.source = &s
+		token.start = 0
+		token.length = len(s)
+	}
+
 	return token
 }
 
