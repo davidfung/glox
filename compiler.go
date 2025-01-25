@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func compile(source string) {
+func compile(source *string) {
 	initScanner(source)
 	line := -1
 	for {

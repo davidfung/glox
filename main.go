@@ -15,13 +15,13 @@ const versionPatch = 0
 
 func repl() {
 	input := bufio.NewScanner(os.Stdin)
-	interpret("+++")
 	for {
 		fmt.Printf("> ")
 		if !input.Scan() {
 			break
 		}
-		interpret(input.Text())
+		source := input.Text()
+		interpret(&source)
 	}
 	fmt.Println("terminating...")
 }
@@ -36,7 +36,7 @@ func readFile(path string) string {
 
 func runFile(path string) {
 	source := readFile(path)
-	result := interpret(source)
+	result := interpret(&source)
 	if result == INTERPRET_COMPILE_ERROR {
 		os.Exit(65)
 	}

@@ -68,14 +68,15 @@ type Scanner struct {
 
 var scanner Scanner
 
-func initScanner(source string) {
-	scanner.source = &source
+func initScanner(source *string) {
+	scanner.source = source
 	scanner.start = 0
 	scanner.current = 0
 	scanner.line = 1
 }
 
 func scanToken() Token {
+	skipWhitespace()
 	scanner.start = scanner.current
 	if isAtEnd() {
 		return makeToken(TOKEN_EOF)
@@ -163,4 +164,8 @@ func errorToken(msg string) Token {
 	token.length = len(msg)
 	token.line = scanner.line
 	return token
+}
+
+func skipWhitespace() {
+
 }
