@@ -167,5 +167,27 @@ func errorToken(msg string) Token {
 }
 
 func skipWhitespace() {
+	for {
+		if isAtEnd() {
+			return
+		}
+		c := peek()
+		switch c {
+		case ' ':
+			advance()
+		case '\r':
+			advance()
+		case '\t':
+			advance()
+		case '\n':
+			scanner.line++
+			advance()
+		default:
+			return
+		}
+	}
+}
 
+func peek() byte {
+	return byte((*scanner.source)[scanner.current])
 }
