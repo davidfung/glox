@@ -182,6 +182,14 @@ func skipWhitespace() {
 		case '\n':
 			scanner.line++
 			advance()
+		case '/':
+			if peekNext() == '/' {
+				for peek() != '\n' && !isAtEnd() {
+					advance()
+				}
+			} else {
+				return
+			}
 		default:
 			return
 		}
@@ -190,4 +198,11 @@ func skipWhitespace() {
 
 func peek() byte {
 	return byte((*scanner.source)[scanner.current])
+}
+
+func peekNext() byte {
+	if isAtEnd() {
+		return 0
+	}
+	return byte((*scanner.source)[scanner.current+1])
 }

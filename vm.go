@@ -63,8 +63,6 @@ func binary_op(op int) {
 }
 
 func interpret(source *string) int {
-	fmt.Println("Interpreting...")
-	fmt.Println(*source)
 	compile(source)
 	return INTERPRET_OK
 }

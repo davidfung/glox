@@ -54,6 +54,7 @@ func main() {
 	printVersion()
 
 	initVM()
+	runFile("abc")
 
 	if len(os.Args) == 1 {
 		repl()
