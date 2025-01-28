@@ -84,35 +84,55 @@ func scanToken() Token {
 
 	c := advance()
 
-	switch {
-	case c == '(':
+	switch c {
+	case '(':
 		return makeToken(TOKEN_LEFT_PAREN)
-	case c == ')':
+	case ')':
 		return makeToken(TOKEN_RIGHT_PAREN)
-	case c == '{':
+	case '{':
 		return makeToken(TOKEN_LEFT_BRACE)
-	case c == '}':
+	case '}':
 		return makeToken(TOKEN_RIGHT_BRACE)
-	case c == ';':
+	case ';':
 		return makeToken(TOKEN_SEMICOLON)
-	case c == ',':
+	case ',':
 		return makeToken(TOKEN_COMMA)
-	case c == '.':
+	case '.':
 		return makeToken(TOKEN_DOT)
-	case c == '-':
+	case '-':
 		return makeToken(TOKEN_MINUS)
-	case c == '+':
+	case '+':
 		return makeToken(TOKEN_PLUS)
-	case c == '/':
+	case '/':
 		return makeToken(TOKEN_SLASH)
-	case c == '*':
+	case '*':
 		return makeToken(TOKEN_STAR)
-	case c == '!':
+	case '!':
 		if match('=') {
 			return makeToken(TOKEN_BANG_EQUAL)
 		} else {
 			return makeToken(TOKEN_BANG)
 		}
+	case '=':
+		if match('=') {
+			return makeToken(TOKEN_EQUAL_EQUAL)
+		} else {
+			return makeToken(TOKEN_EQUAL)
+		}
+	case '<':
+		if match('=') {
+			return makeToken(TOKEN_LESS_EQUAL)
+		} else {
+			return makeToken(TOKEN_LESS)
+		}
+	case '>':
+		if match('=') {
+			return makeToken(TOKEN_GREATER_EQUAL)
+		} else {
+			return makeToken(TOKEN_GREATER)
+		}
+	case '"':
+		return quotedString()
 	}
 
 	return errorToken("Unexpected character.")
@@ -194,6 +214,22 @@ func skipWhitespace() {
 			return
 		}
 	}
+}
+
+func quotedString() Token {
+	for peek() != '"' && !isAtEnd() {
+		if peek() == '\n' {
+			scanner.line++
+		}
+		advance()
+	}
+
+	if isAtEnd() {
+		return errorToken("Unterminated string.")
+	}
+
+	advance() // the closing quote
+	return makeToken(TOKEN_STRING)
 }
 
 func peek() byte {
