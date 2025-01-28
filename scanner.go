@@ -217,7 +217,7 @@ func skipWhitespace() {
 }
 
 func quotedString() Token {
-	for peek() != '"' && !isAtEnd() {
+	for !isAtEnd() && peek() != '"' {
 		if peek() == '\n' {
 			scanner.line++
 		}
