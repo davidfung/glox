@@ -75,6 +75,10 @@ func initScanner(source *string) {
 	scanner.line = 1
 }
 
+func isDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
 func scanToken() Token {
 	skipWhitespace()
 	scanner.start = scanner.current
@@ -83,6 +87,9 @@ func scanToken() Token {
 	}
 
 	c := advance()
+	if isDigit(c) {
+		return number()
+	}
 
 	switch c {
 	case '(':
@@ -214,6 +221,24 @@ func skipWhitespace() {
 			return
 		}
 	}
+}
+
+func number() Token {
+	for isDigit(peek()) {
+		advance()
+	}
+
+	// Look for a fractional part.
+	if peek() == '.' && isDigit(peekNext()) {
+		// Consume the ".".
+		advance()
+
+		for isDigit(peek()) {
+			advance()
+		}
+	}
+
+	return makeToken(TOKEN_NUMBER)
 }
 
 func quotedString() Token {
