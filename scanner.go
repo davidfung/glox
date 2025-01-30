@@ -258,6 +258,9 @@ func quotedString() Token {
 }
 
 func peek() byte {
+	if isAtEnd() {
+		return 0
+	}
 	return byte((*scanner.source)[scanner.current])
 }
 

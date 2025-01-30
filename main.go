@@ -15,6 +15,8 @@ const versionPatch = 0
 
 func repl() {
 	input := bufio.NewScanner(os.Stdin)
+	fmt.Println()
+	fmt.Println("Type ctrl-d to exit.")
 	for {
 		fmt.Printf("> ")
 		if !input.Scan() {
