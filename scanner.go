@@ -1,7 +1,9 @@
 package main
 
+type TokenType int
+
 const (
-	TOKEN_LEFT_PAREN = iota
+	TOKEN_LEFT_PAREN TokenType = iota
 	TOKEN_RIGHT_PAREN
 	TOKEN_LEFT_BRACE
 	TOKEN_RIGHT_BRACE
@@ -53,7 +55,7 @@ const (
 
 type Token struct {
 	source *string
-	typ    int
+	typ    TokenType
 	start  int
 	length int
 	line   int
@@ -75,6 +77,12 @@ func initScanner(source *string) {
 	scanner.line = 1
 }
 
+func isAlpha(c byte) bool {
+	return (c >= 'a' && c <= 'z') ||
+		(c >= 'A' && c <= 'Z') ||
+		c == '_'
+}
+
 func isDigit(c byte) bool {
 	return c >= '0' && c <= '9'
 }
@@ -87,6 +95,9 @@ func scanToken() Token {
 	}
 
 	c := advance()
+	if isAlpha(c) {
+		return identifier()
+	}
 	if isDigit(c) {
 		return number()
 	}
@@ -165,7 +176,7 @@ func match(expected byte) bool {
 	return true
 }
 
-func makeToken(typ int) Token {
+func makeToken(typ TokenType) Token {
 	var token Token
 	token.source = scanner.source
 	token.typ = typ
@@ -221,6 +232,17 @@ func skipWhitespace() {
 			return
 		}
 	}
+}
+
+func identifierType() TokenType {
+	return TOKEN_IDENTIFIER
+}
+
+func identifier() Token {
+	for isAlpha(peek()) || isDigit(peek()) {
+		advance()
+	}
+	return makeToken(identifierType())
 }
 
 func number() Token {
