@@ -16,7 +16,7 @@ const (
 	TOKEN_STAR
 
 	// One or two character tokens
-	TOKEN_BANG
+	TOKEN_BANG // 11
 	TOKEN_BANG_EQUAL
 	TOKEN_EQUAL
 	TOKEN_EQUAL_EQUAL
@@ -27,12 +27,12 @@ const (
 
 	// Literals
 
-	TOKEN_IDENTIFIER
+	TOKEN_IDENTIFIER // 19
 	TOKEN_STRING
 	TOKEN_NUMBER
 
 	// Keywords
-	TOKEN_AND
+	TOKEN_AND // 22
 	TOKEN_CLASS
 	TOKEN_ELSE
 	TOKEN_FALSE
@@ -49,7 +49,7 @@ const (
 	TOKEN_VAR
 	TOKEN_WHILE
 
-	TOKEN_ERROR
+	TOKEN_ERROR // 38
 	TOKEN_EOF
 )
 
@@ -234,7 +234,59 @@ func skipWhitespace() {
 	}
 }
 
+func checkKeyword(start int, length int, rest string, tokenType TokenType) TokenType {
+	if scanner.current-scanner.start == start+length &&
+		(*scanner.source)[scanner.start+start:scanner.start+start+length] == rest {
+		return tokenType
+	}
+	return TOKEN_IDENTIFIER
+}
+
 func identifierType() TokenType {
+	switch (*scanner.source)[scanner.start] {
+	case 'a':
+		return checkKeyword(1, 2, "nd", TOKEN_AND)
+	case 'c':
+		return checkKeyword(1, 4, "lass", TOKEN_CLASS)
+	case 'e':
+		return checkKeyword(1, 3, "lse", TOKEN_ELSE)
+	case 'f':
+		if scanner.current-scanner.start > 1 {
+			switch (*scanner.source)[scanner.start+1] {
+			case 'a':
+				return checkKeyword(2, 3, "lse", TOKEN_FALSE)
+			case 'o':
+				return checkKeyword(2, 1, "r", TOKEN_FOR)
+			case 'u':
+				return checkKeyword(2, 1, "n", TOKEN_FUN)
+			}
+		}
+	case 'i':
+		return checkKeyword(1, 1, "f", TOKEN_IF)
+	case 'n':
+		return checkKeyword(1, 2, "il", TOKEN_NIL)
+	case 'o':
+		return checkKeyword(1, 1, "r", TOKEN_OR)
+	case 'p':
+		return checkKeyword(1, 4, "rint", TOKEN_PRINT)
+	case 'r':
+		return checkKeyword(1, 5, "eturn", TOKEN_RETURN)
+	case 's':
+		return checkKeyword(1, 4, "uper", TOKEN_SUPER)
+	case 't':
+		if scanner.current-scanner.start > 1 {
+			switch (*scanner.source)[scanner.start+1] {
+			case 'h':
+				return checkKeyword(2, 2, "is", TOKEN_THIS)
+			case 'r':
+				return checkKeyword(2, 2, "ue", TOKEN_TRUE)
+			}
+		}
+	case 'v':
+		return checkKeyword(1, 2, "ar", TOKEN_VAR)
+	case 'w':
+		return checkKeyword(1, 4, "hile", TOKEN_WHILE)
+	}
 	return TOKEN_IDENTIFIER
 }
 
