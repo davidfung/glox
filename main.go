@@ -10,7 +10,7 @@ import (
 const DEBUG_TRACE_EXECUTION = true
 
 const versionMajor = 0
-const versionMinor = 2
+const versionMinor = 3
 const versionPatch = 0
 
 func repl() {
