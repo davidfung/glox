@@ -1,24 +1,76 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
-func compile(source *string) {
-	initScanner(source)
-	line := -1
+type Parser struct {
+	current   Token
+	previous  Token
+	hadError  bool
+	panicMode bool
+}
+
+var parser Parser
+
+func errorAt(token Token, message string) {
+	if parser.panicMode {
+		return
+	}
+	parser.panicMode = true
+	fmt.Fprintf(os.Stderr, "[line %d] Error", token.line)
+
+	if token.typ == TOKEN_EOF {
+		fmt.Fprintf(os.Stderr, " at end")
+	} else if token.typ == TOKEN_ERROR {
+		// Nothing.
+	} else {
+		fmt.Fprintf(os.Stderr, " at '%s'", (*token.source)[token.start:token.length])
+	}
+
+	fmt.Fprintf(os.Stderr, ": %s\n, message")
+	parser.hadError = true
+}
+
+func error(message string) {
+	errorAt(parser.previous, message)
+}
+
+func errorAtCurrent(message string) {
+	errorAt(parser.current, message)
+}
+
+func parser_advance() {
+	parser.previous = parser.current
+
 	for {
-		token := scanToken()
-
-		if token.typ == TOKEN_EOF {
+		parser.current = scanToken()
+		if parser.current.typ != TOKEN_ERROR {
 			break
 		}
-
-		if token.line != line {
-			fmt.Printf("%4d ", token.line)
-			line = token.line
-		} else {
-			fmt.Printf("   | ")
-		}
-
-		fmt.Printf("%2d '%s'\n", token.typ, string((*token.source)[token.start:token.start+token.length]))
+		// TOFIX: not sure why passing the current current token tax to errorAtCurrent
+		errorAtCurrent((*parser.current.source)[parser.current.start : parser.current.start+parser.current.length])
 	}
+}
+
+func consume(typ TokenType, message string) {
+	if parser.current.typ == typ {
+		parser_advance()
+		return
+	}
+
+	errorAtCurrent(message)
+}
+
+func compile(source *string, chunk *Chunk) bool {
+	initScanner(source)
+
+	parser.hadError = false
+	parser.panicMode = false
+
+	parser_advance()
+	expression()
+	consume(TOKEN_EOF, "Expect end of expression.")
+	return !parser.hadError
 }

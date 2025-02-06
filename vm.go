@@ -63,8 +63,21 @@ func binary_op(op int) {
 }
 
 func interpret(source *string) int {
-	compile(source)
-	return INTERPRET_OK
+	var chunk Chunk
+	initChunk(&chunk)
+
+	if !compile(source, &chunk) {
+		freeChunk(&chunk)
+		return INTERPRET_COMPILE_ERROR
+	}
+
+	vm.chunk = &chunk
+	vm.ip = 0
+
+	result := run()
+
+	freeChunk(&chunk)
+	return result
 }
 
 func run() int {
