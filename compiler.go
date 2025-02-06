@@ -13,6 +13,11 @@ type Parser struct {
 }
 
 var parser Parser
+var compilingChunk *Chunk
+
+func currentChunk() *Chunk {
+	return compilingChunk
+}
 
 func errorAt(token Token, message string) {
 	if parser.panicMode {
@@ -63,8 +68,26 @@ func consume(typ TokenType, message string) {
 	errorAtCurrent(message)
 }
 
+func emitByte(byte_ uint8) {
+	writeChunk(currentChunk(), byte_, parser.previous.line)
+}
+
+func emitBytes(byte1 uint8, byte2 uint8) {
+	emitByte(byte1)
+	emitByte(byte2)
+}
+
+func emitReturn() {
+	emitByte(OP_RETURN)
+}
+
+func endCompiler() {
+	emitReturn()
+}
+
 func compile(source *string, chunk *Chunk) bool {
 	initScanner(source)
+	compilingChunk = chunk
 
 	parser.hadError = false
 	parser.panicMode = false
@@ -72,5 +95,6 @@ func compile(source *string, chunk *Chunk) bool {
 	parser_advance()
 	expression()
 	consume(TOKEN_EOF, "Expect end of expression.")
+	endCompiler()
 	return !parser.hadError
 }
