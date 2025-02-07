@@ -36,7 +36,7 @@ func errorAt(token Token, message string) {
 		fmt.Fprintf(os.Stderr, " at '%s'", (*token.source)[token.start:token.length])
 	}
 
-	fmt.Fprintf(os.Stderr, ": %s\n, message")
+	fmt.Fprintf(os.Stderr, ": %s\n", message)
 	parser.hadError = true
 }
 
