@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
+	"strconv"
 )
 
 type Parser struct {
@@ -81,8 +83,36 @@ func emitReturn() {
 	emitByte(OP_RETURN)
 }
 
+func makeConstant(value Value) uint8 {
+	constant := addConstant(currentChunk(), value)
+	if constant > math.MaxUint8 {
+		error("Too many constants in one chunk.")
+		return 0
+	}
+	return uint8(constant)
+}
+
+func emitConstant(value Value) {
+	emitBytes(OP_CONSTANT, makeConstant(value))
+}
+
 func endCompiler() {
 	emitReturn()
+}
+
+func parser_number() {
+	beg := parser.previous.start
+	end := parser.previous.start + parser.previous.length
+	s := (*parser.previous.source)[beg:end]
+	value, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		error(err.Error())
+	}
+	emitConstant(Value(value))
+}
+
+func expression() {
+	// What goes here?
 }
 
 func compile(source *string, chunk *Chunk) bool {
