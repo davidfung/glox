@@ -11,7 +11,7 @@ const DEBUG_TRACE_EXECUTION = true
 
 const versionMajor = 0
 const versionMinor = 3
-const versionPatch = 0
+const versionPatch = 2
 
 func repl() {
 	input := bufio.NewScanner(os.Stdin)
