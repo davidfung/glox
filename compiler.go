@@ -28,9 +28,9 @@ func errorAt(token Token, message string) {
 	parser.panicMode = true
 	fmt.Fprintf(os.Stderr, "[line %d] Error", token.line)
 
-	if token.typ == TOKEN_EOF {
+	if token.type_ == TOKEN_EOF {
 		fmt.Fprintf(os.Stderr, " at end")
-	} else if token.typ == TOKEN_ERROR {
+	} else if token.type_ == TOKEN_ERROR {
 		// Nothing.
 	} else {
 		fmt.Fprintf(os.Stderr, " at '%s'", (*token.source)[token.start:token.length])
@@ -53,7 +53,7 @@ func parser_advance() {
 
 	for {
 		parser.current = scanToken()
-		if parser.current.typ != TOKEN_ERROR {
+		if parser.current.type_ != TOKEN_ERROR {
 			break
 		}
 		// TOFIX: not sure why passing the current current token tax to errorAtCurrent
@@ -62,7 +62,7 @@ func parser_advance() {
 }
 
 func consume(typ TokenType, message string) {
-	if parser.current.typ == typ {
+	if parser.current.type_ == typ {
 		parser_advance()
 		return
 	}

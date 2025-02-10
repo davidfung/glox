@@ -1,6 +1,4 @@
 NEXT
-- jack up version to 0.3.1 and test release
-- typ to type_
 - fix: repl() why &(input.Text()) does not work?
 - type define InterpretResult
 - advance() in both compiler and scanner

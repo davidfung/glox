@@ -55,7 +55,7 @@ const (
 
 type Token struct {
 	source *string
-	typ    TokenType
+	type_  TokenType
 	start  int
 	length int
 	line   int
@@ -179,7 +179,7 @@ func match(expected byte) bool {
 func makeToken(typ TokenType) Token {
 	var token Token
 	token.source = scanner.source
-	token.typ = typ
+	token.type_ = typ
 	token.start = scanner.start
 	token.length = scanner.current - scanner.start
 	token.line = scanner.line
@@ -197,7 +197,7 @@ func makeToken(typ TokenType) Token {
 func errorToken(msg string) Token {
 	var token Token
 	token.source = &msg
-	token.typ = TOKEN_ERROR
+	token.type_ = TOKEN_ERROR
 	token.start = 0
 	token.length = len(msg)
 	token.line = scanner.line
