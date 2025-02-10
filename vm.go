@@ -11,8 +11,10 @@ type VM struct {
 	stackTop int
 }
 
+type InterpretResult int
+
 const (
-	INTERPRET_OK = iota
+	INTERPRET_OK InterpretResult = iota
 	INTERPRET_COMPILE_ERROR
 	INTERPRET_RUNTIME_ERROR
 )
@@ -62,7 +64,7 @@ func binary_op(op int) {
 	}
 }
 
-func interpret(source *string) int {
+func interpret(source *string) InterpretResult {
 	var chunk Chunk
 	initChunk(&chunk)
 
@@ -80,7 +82,7 @@ func interpret(source *string) int {
 	return result
 }
 
-func run() int {
+func run() InterpretResult {
 	readByte := func() uint8 {
 		instruction := vm.chunk.code[vm.ip]
 		vm.ip++
