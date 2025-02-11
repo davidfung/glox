@@ -22,7 +22,7 @@ func repl() {
 		if !input.Scan() {
 			break
 		}
-		source := input.Text() //TODO why &(input.Text()) does not work?
+		source := input.Text()
 		interpret(&source)
 	}
 	fmt.Println("terminating...")

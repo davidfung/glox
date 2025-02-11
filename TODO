@@ -1,7 +1,7 @@
 NEXT
-- fix: repl() why &(input.Text()) does not work?
 - advance() in both compiler and scanner
 - number() in both compiler and scanner
   - move into different package?
 
 TODO
+- add tests
