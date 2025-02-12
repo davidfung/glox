@@ -10,8 +10,8 @@ import (
 )
 
 const versionMajor = 0
-const versionMinor = 3
-const versionPatch = 2
+const versionMinor = 4
+const versionPatch = 0
 
 func repl() {
 	input := bufio.NewScanner(os.Stdin)
