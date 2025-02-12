@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-)
 
-const DEBUG_TRACE_EXECUTION = true
+	"github.com/davidfung/glox/vm"
+)
 
 const versionMajor = 0
 const versionMinor = 3
@@ -23,7 +23,7 @@ func repl() {
 			break
 		}
 		source := input.Text()
-		interpret(&source)
+		vm.Interpret(&source)
 	}
 	fmt.Println("terminating...")
 }
@@ -38,11 +38,11 @@ func readFile(path string) string {
 
 func runFile(path string) {
 	source := readFile(path)
-	result := interpret(&source)
-	if result == INTERPRET_COMPILE_ERROR {
+	result := vm.Interpret(&source)
+	if result == vm.INTERPRET_COMPILE_ERROR {
 		os.Exit(65)
 	}
-	if result == INTERPRET_RUNTIME_ERROR {
+	if result == vm.INTERPRET_RUNTIME_ERROR {
 		os.Exit(70)
 	}
 
@@ -55,7 +55,7 @@ func printVersion() {
 func main() {
 	printVersion()
 
-	initVM()
+	vm.InitVM()
 
 	if len(os.Args) == 1 {
 		repl()
@@ -65,5 +65,5 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Usage: glox [path]")
 	}
 
-	freeVM()
+	vm.FreeVM()
 }

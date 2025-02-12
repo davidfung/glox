@@ -1,4 +1,4 @@
-package main
+package scanner
 
 type TokenType int
 
@@ -54,11 +54,11 @@ const (
 )
 
 type Token struct {
-	source *string
-	type_  TokenType
-	start  int
-	length int
-	line   int
+	Source *string
+	Type   TokenType
+	Start  int
+	Length int
+	Line   int
 }
 
 type Scanner struct {
@@ -70,7 +70,7 @@ type Scanner struct {
 
 var scanner Scanner
 
-func initScanner(source *string) {
+func InitScanner(source *string) {
 	scanner.source = source
 	scanner.start = 0
 	scanner.current = 0
@@ -87,7 +87,7 @@ func isDigit(c byte) bool {
 	return c >= '0' && c <= '9'
 }
 
-func scanToken() Token {
+func ScanToken() Token {
 	skipWhitespace()
 	scanner.start = scanner.current
 	if isAtEnd() {
@@ -178,17 +178,17 @@ func match(expected byte) bool {
 
 func makeToken(typ TokenType) Token {
 	var token Token
-	token.source = scanner.source
-	token.type_ = typ
-	token.start = scanner.start
-	token.length = scanner.current - scanner.start
-	token.line = scanner.line
+	token.Source = scanner.source
+	token.Type = typ
+	token.Start = scanner.start
+	token.Length = scanner.current - scanner.start
+	token.Line = scanner.line
 
 	if typ == TOKEN_EOF {
 		s := ""
-		token.source = &s
-		token.start = 0
-		token.length = len(s)
+		token.Source = &s
+		token.Start = 0
+		token.Length = len(s)
 	}
 
 	return token
@@ -196,11 +196,11 @@ func makeToken(typ TokenType) Token {
 
 func errorToken(msg string) Token {
 	var token Token
-	token.source = &msg
-	token.type_ = TOKEN_ERROR
-	token.start = 0
-	token.length = len(msg)
-	token.line = scanner.line
+	token.Source = &msg
+	token.Type = TOKEN_ERROR
+	token.Start = 0
+	token.Length = len(msg)
+	token.Line = scanner.line
 	return token
 }
 

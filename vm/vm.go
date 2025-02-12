@@ -1,13 +1,20 @@
-package main
+package vm
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/davidfung/glox/chunk"
+	"github.com/davidfung/glox/compiler"
+	"github.com/davidfung/glox/debugger"
+	"github.com/davidfung/glox/value"
+)
 
 const STACK_MAX = 256
 
 type VM struct {
-	chunk    *Chunk
+	chunk    *chunk.Chunk
 	ip       int
-	stack    [STACK_MAX]Value
+	stack    [STACK_MAX]value.Value
 	stackTop int
 }
 
@@ -32,19 +39,19 @@ func resetStack() {
 	vm.stackTop = 0
 }
 
-func initVM() {
+func InitVM() {
 	resetStack()
 }
 
-func freeVM() {
+func FreeVM() {
 }
 
-func push(value Value) {
+func push(value value.Value) {
 	vm.stack[vm.stackTop] = value
 	vm.stackTop++
 }
 
-func pop() Value {
+func pop() value.Value {
 	vm.stackTop--
 	return vm.stack[vm.stackTop]
 }
@@ -64,64 +71,64 @@ func binary_op(op int) {
 	}
 }
 
-func interpret(source *string) InterpretResult {
-	var chunk Chunk
-	initChunk(&chunk)
+func Interpret(source *string) InterpretResult {
+	var chun chunk.Chunk
+	chunk.InitChunk(&chun)
 
-	if !compile(source, &chunk) {
-		freeChunk(&chunk)
+	if !compiler.Compile(source, &chun) {
+		chunk.FreeChunk(&chun)
 		return INTERPRET_COMPILE_ERROR
 	}
 
-	vm.chunk = &chunk
+	vm.chunk = &chun
 	vm.ip = 0
 
 	result := run()
 
-	freeChunk(&chunk)
+	chunk.FreeChunk(&chun)
 	return result
 }
 
 func run() InterpretResult {
 	readByte := func() uint8 {
-		instruction := vm.chunk.code[vm.ip]
+		instruction := vm.chunk.Code[vm.ip]
 		vm.ip++
 		return instruction
 	}
 
-	readConstant := func() Value {
-		return vm.chunk.constants.values[readByte()]
+	readConstant := func() value.Value {
+		return vm.chunk.Constants.Values[readByte()]
 	}
 
 	for {
-		if DEBUG_TRACE_EXECUTION {
+		if debugger.DEBUG_TRACE_EXECUTION {
 			fmt.Printf("         ")
 			for i := 0; i < vm.stackTop; i++ {
 				fmt.Printf("[")
-				printValue(vm.stack[i])
+				value.PrintValue(vm.stack[i])
 				fmt.Printf("]")
 			}
 			fmt.Printf("\n")
-			disassembleInstruction(vm.chunk, vm.ip)
+			debugger.DisassembleInstruction(vm.chunk, vm.ip)
 		}
 
 		instruction := readByte()
 		switch instruction {
-		case OP_CONSTANT:
+		case chunk.OP_CONSTANT:
 			constant := readConstant()
 			push(constant)
-		case OP_ADD:
+		case chunk.OP_ADD:
 			binary_op(BINARY_OP_ADD)
-		case OP_SUBTRACT:
+		case chunk.OP_SUBTRACT:
 			binary_op(BINARY_OP_SUBTRACT)
-		case OP_MULTIPLY:
+		case chunk.OP_MULTIPLY:
 			binary_op(BINARY_OP_MULTIPLY)
-		case OP_DIVIDE:
+		case chunk.OP_DIVIDE:
 			binary_op(BINARY_OP_DIVIDE)
-		case OP_NEGATE:
+		case chunk.OP_NEGATE:
 			push(-pop())
-		case OP_RETURN:
-			printValue(pop())
+		case chunk.OP_RETURN:
+			value.PrintValue(pop())
 			fmt.Printf("\n")
 			return INTERPRET_OK
 		}
