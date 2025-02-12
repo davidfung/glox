@@ -18,6 +18,22 @@ type Parser struct {
 	panicMode bool
 }
 
+type Precedence int
+
+const (
+	PREC_NONE       Precedence = iota
+	PREC_ASSIGNMENT            // =
+	PREC_OR                    // or
+	PREC_AND                   // and
+	PREC_EQUALITY              // == !=
+	PREC_COMPARISON            // < > <= >=
+	PREC_TERM                  // + -
+	PREC_FACTOR                // * /
+	PREC_UNARY                 // ! -
+	PREC_CALL                  // . ()
+	PREC_PRIMARY
+)
+
 var parser Parser
 var compilingChunk *chunk.Chunk
 
@@ -104,6 +120,15 @@ func endCompiler() {
 	emitReturn()
 }
 
+func grouping() {
+	expression()
+	consume(scanner.TOKEN_RIGHT_PAREN, "Expect ')' after expression.")
+}
+
+func expression() {
+	parsePrecedence(PREC_ASSIGNMENT)
+}
+
 func number() {
 	beg := parser.previous.Start
 	end := parser.previous.Start + parser.previous.Length
@@ -115,7 +140,22 @@ func number() {
 	emitConstant(value.Value(val))
 }
 
-func expression() {
+func unary() {
+	operatorType := parser.previous.Type
+
+	// Compile the operand.
+	parsePrecedence(PREC_UNARY)
+
+	// Emit the operator instruction.
+	switch operatorType {
+	case scanner.TOKEN_MINUS:
+		emitByte(chunk.OP_NEGATE)
+	default: // Unreachable
+		return
+	}
+}
+
+func parsePrecedence(precedence Precedence) {
 	// What goes here?
 }
 
