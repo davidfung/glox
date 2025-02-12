@@ -1,7 +1,5 @@
 NEXT
-- advance() in both compiler and scanner
-- number() in both compiler and scanner
-  - move into different package?
+- parse paranthesis grouping
 
 TODO
 - add tests

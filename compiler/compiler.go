@@ -52,7 +52,7 @@ func errorAtCurrent(message string) {
 	errorAt(parser.current, message)
 }
 
-func parser_advance() {
+func advance() {
 	parser.previous = parser.current
 
 	for {
@@ -67,7 +67,7 @@ func parser_advance() {
 
 func consume(typ scanner.TokenType, message string) {
 	if parser.current.Type == typ {
-		parser_advance()
+		advance()
 		return
 	}
 
@@ -104,7 +104,7 @@ func endCompiler() {
 	emitReturn()
 }
 
-func parser_number() {
+func number() {
 	beg := parser.previous.Start
 	end := parser.previous.Start + parser.previous.Length
 	s := (*parser.previous.Source)[beg:end]
@@ -126,7 +126,7 @@ func Compile(source *string, chunk *chunk.Chunk) bool {
 	parser.hadError = false
 	parser.panicMode = false
 
-	parser_advance()
+	advance()
 	expression()
 	consume(scanner.TOKEN_EOF, "Expect end of expression.")
 	endCompiler()
