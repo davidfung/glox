@@ -120,6 +120,25 @@ func endCompiler() {
 	emitReturn()
 }
 
+func binary() {
+	operatorType := parser.previous.Type
+	rule := getRule(operatorType)
+	parsePrecedence(rule.precedence + 1)
+
+	switch operatorType {
+	case scanner.TOKEN_PLUS:
+		emitByte(chunk.OP_ADD)
+	case scanner.TOKEN_MINUS:
+		emitByte(chunk.OP_SUBTRACT)
+	case scanner.TOKEN_STAR:
+		emitByte(chunk.OP_MULTIPLY)
+	case scanner.TOKEN_SLASH:
+		emitByte(chunk.OP_DIVIDE)
+	default:
+		return // Unreachable.
+	}
+}
+
 func grouping() {
 	expression()
 	consume(scanner.TOKEN_RIGHT_PAREN, "Expect ')' after expression.")
