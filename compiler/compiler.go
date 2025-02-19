@@ -44,6 +44,7 @@ type ParseRule struct {
 
 var parser Parser
 var compilingChunk *chunk.Chunk
+var rules []ParseRule
 
 func currentChunk() *chunk.Chunk {
 	return compilingChunk
@@ -182,49 +183,6 @@ func unary() {
 	}
 }
 
-var rules = []ParseRule{
-	scanner.TOKEN_LEFT_PAREN:    {grouping, nil, PREC_NONE},
-	scanner.TOKEN_RIGHT_PAREN:   {nil, nil, PREC_NONE},
-	scanner.TOKEN_LEFT_BRACE:    {nil, nil, PREC_NONE},
-	scanner.TOKEN_RIGHT_BRACE:   {nil, nil, PREC_NONE},
-	scanner.TOKEN_COMMA:         {nil, nil, PREC_NONE},
-	scanner.TOKEN_DOT:           {nil, nil, PREC_NONE},
-	scanner.TOKEN_MINUS:         {unary, binary, PREC_TERM},
-	scanner.TOKEN_PLUS:          {nil, binary, PREC_TERM},
-	scanner.TOKEN_SEMICOLON:     {nil, nil, PREC_NONE},
-	scanner.TOKEN_SLASH:         {nil, binary, PREC_FACTOR},
-	scanner.TOKEN_STAR:          {nil, binary, PREC_FACTOR},
-	scanner.TOKEN_BANG:          {nil, nil, PREC_NONE},
-	scanner.TOKEN_BANG_EQUAL:    {nil, nil, PREC_NONE},
-	scanner.TOKEN_EQUAL:         {nil, nil, PREC_NONE},
-	scanner.TOKEN_EQUAL_EQUAL:   {nil, nil, PREC_NONE},
-	scanner.TOKEN_GREATER:       {nil, nil, PREC_NONE},
-	scanner.TOKEN_GREATER_EQUAL: {nil, nil, PREC_NONE},
-	scanner.TOKEN_LESS:          {nil, nil, PREC_NONE},
-	scanner.TOKEN_LESS_EQUAL:    {nil, nil, PREC_NONE},
-	scanner.TOKEN_IDENTIFIER:    {nil, nil, PREC_NONE},
-	scanner.TOKEN_STRING:        {nil, nil, PREC_NONE},
-	scanner.TOKEN_NUMBER:        {number, nil, PREC_NONE},
-	scanner.TOKEN_AND:           {nil, nil, PREC_NONE},
-	scanner.TOKEN_CLASS:         {nil, nil, PREC_NONE},
-	scanner.TOKEN_ELSE:          {nil, nil, PREC_NONE},
-	scanner.TOKEN_FALSE:         {nil, nil, PREC_NONE},
-	scanner.TOKEN_FOR:           {nil, nil, PREC_NONE},
-	scanner.TOKEN_FUN:           {nil, nil, PREC_NONE},
-	scanner.TOKEN_IF:            {nil, nil, PREC_NONE},
-	scanner.TOKEN_NIL:           {nil, nil, PREC_NONE},
-	scanner.TOKEN_OR:            {nil, nil, PREC_NONE},
-	scanner.TOKEN_PRINT:         {nil, nil, PREC_NONE},
-	scanner.TOKEN_RETURN:        {nil, nil, PREC_NONE},
-	scanner.TOKEN_SUPER:         {nil, nil, PREC_NONE},
-	scanner.TOKEN_THIS:          {nil, nil, PREC_NONE},
-	scanner.TOKEN_TRUE:          {nil, nil, PREC_NONE},
-	scanner.TOKEN_VAR:           {nil, nil, PREC_NONE},
-	scanner.TOKEN_WHILE:         {nil, nil, PREC_NONE},
-	scanner.TOKEN_ERROR:         {nil, nil, PREC_NONE},
-	scanner.TOKEN_EOF:           {nil, nil, PREC_NONE},
-}
-
 func parsePrecedence(precedence Precedence) {
 	// What goes here?
 }
@@ -234,6 +192,51 @@ func getRule(tokenType scanner.TokenType) ParseRule {
 	return rules[tokenType]
 }
 
+func initCompiler() {
+	rules = []ParseRule{
+		scanner.TOKEN_LEFT_PAREN:    {grouping, nil, PREC_NONE},
+		scanner.TOKEN_RIGHT_PAREN:   {nil, nil, PREC_NONE},
+		scanner.TOKEN_LEFT_BRACE:    {nil, nil, PREC_NONE},
+		scanner.TOKEN_RIGHT_BRACE:   {nil, nil, PREC_NONE},
+		scanner.TOKEN_COMMA:         {nil, nil, PREC_NONE},
+		scanner.TOKEN_DOT:           {nil, nil, PREC_NONE},
+		scanner.TOKEN_MINUS:         {unary, binary, PREC_TERM},
+		scanner.TOKEN_PLUS:          {nil, binary, PREC_TERM},
+		scanner.TOKEN_SEMICOLON:     {nil, nil, PREC_NONE},
+		scanner.TOKEN_SLASH:         {nil, binary, PREC_FACTOR},
+		scanner.TOKEN_STAR:          {nil, binary, PREC_FACTOR},
+		scanner.TOKEN_BANG:          {nil, nil, PREC_NONE},
+		scanner.TOKEN_BANG_EQUAL:    {nil, nil, PREC_NONE},
+		scanner.TOKEN_EQUAL:         {nil, nil, PREC_NONE},
+		scanner.TOKEN_EQUAL_EQUAL:   {nil, nil, PREC_NONE},
+		scanner.TOKEN_GREATER:       {nil, nil, PREC_NONE},
+		scanner.TOKEN_GREATER_EQUAL: {nil, nil, PREC_NONE},
+		scanner.TOKEN_LESS:          {nil, nil, PREC_NONE},
+		scanner.TOKEN_LESS_EQUAL:    {nil, nil, PREC_NONE},
+		scanner.TOKEN_IDENTIFIER:    {nil, nil, PREC_NONE},
+		scanner.TOKEN_STRING:        {nil, nil, PREC_NONE},
+		scanner.TOKEN_NUMBER:        {number, nil, PREC_NONE},
+		scanner.TOKEN_AND:           {nil, nil, PREC_NONE},
+		scanner.TOKEN_CLASS:         {nil, nil, PREC_NONE},
+		scanner.TOKEN_ELSE:          {nil, nil, PREC_NONE},
+		scanner.TOKEN_FALSE:         {nil, nil, PREC_NONE},
+		scanner.TOKEN_FOR:           {nil, nil, PREC_NONE},
+		scanner.TOKEN_FUN:           {nil, nil, PREC_NONE},
+		scanner.TOKEN_IF:            {nil, nil, PREC_NONE},
+		scanner.TOKEN_NIL:           {nil, nil, PREC_NONE},
+		scanner.TOKEN_OR:            {nil, nil, PREC_NONE},
+		scanner.TOKEN_PRINT:         {nil, nil, PREC_NONE},
+		scanner.TOKEN_RETURN:        {nil, nil, PREC_NONE},
+		scanner.TOKEN_SUPER:         {nil, nil, PREC_NONE},
+		scanner.TOKEN_THIS:          {nil, nil, PREC_NONE},
+		scanner.TOKEN_TRUE:          {nil, nil, PREC_NONE},
+		scanner.TOKEN_VAR:           {nil, nil, PREC_NONE},
+		scanner.TOKEN_WHILE:         {nil, nil, PREC_NONE},
+		scanner.TOKEN_ERROR:         {nil, nil, PREC_NONE},
+		scanner.TOKEN_EOF:           {nil, nil, PREC_NONE},
+	}
+}
+
 func Compile(source *string, chunk *chunk.Chunk) bool {
 	scanner.InitScanner(source)
 	compilingChunk = chunk
@@ -241,6 +244,7 @@ func Compile(source *string, chunk *chunk.Chunk) bool {
 	parser.hadError = false
 	parser.panicMode = false
 
+	initCompiler()
 	advance()
 	expression()
 	consume(scanner.TOKEN_EOF, "Expect end of expression.")
