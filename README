@@ -16,6 +16,9 @@ Pratt Parser
 
 In the C code, use forward declaration to handle a declaration cycle
 in the Pratt Parser.  In Go, use an init() to fix the invalid
-initialization cycle.
+initialization cycle:
+
+Package level variable "rules" depends on binary() in initialication,
+binary() depends on getRules(), which depends on "rules".
 
 End
