@@ -185,6 +185,20 @@ func unary() {
 
 func parsePrecedence(precedence Precedence) {
 	// What goes here?
+	advance()
+	prefixRule := getRule(parser.previous.Type).prefix
+	if prefixRule == nil {
+		error("Expect expression.")
+		return
+	}
+
+	prefixRule()
+
+	for precedence <= getRule(parser.current.Type).precedence {
+		advance()
+		infixRule := getRule(parser.previous.Type).infix
+		infixRule()
+	}
 }
 
 func getRule(tokenType scanner.TokenType) ParseRule {
