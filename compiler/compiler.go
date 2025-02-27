@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/davidfung/glox/chunk"
+	"github.com/davidfung/glox/debugger"
 	"github.com/davidfung/glox/scanner"
 	"github.com/davidfung/glox/value"
 )
@@ -127,6 +128,11 @@ func emitConstant(value value.Value) {
 
 func endCompiler() {
 	emitReturn()
+	if debugger.DEBUG_PRINT_CODE {
+		if !parser.hadError {
+			debugger.DisassembleChunk(currentChunk(), "code")
+		}
+	}
 }
 
 func binary() {

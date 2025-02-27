@@ -7,9 +7,10 @@ import (
 	"github.com/davidfung/glox/value"
 )
 
+const DEBUG_PRINT_CODE = true
 const DEBUG_TRACE_EXECUTION = true
 
-func disassembleChunk(chun *chunk.Chunk, name string) {
+func DisassembleChunk(chun *chunk.Chunk, name string) {
 	fmt.Printf("== %s ==\n", name)
 	for offset := 0; offset < len(chun.Code); {
 		offset = DisassembleInstruction(chun, offset)
