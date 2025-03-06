@@ -190,7 +190,6 @@ func unary() {
 }
 
 func parsePrecedence(precedence Precedence) {
-	// What goes here?
 	advance()
 	prefixRule := getRule(parser.previous.Type).prefix
 	if prefixRule == nil {
@@ -208,7 +207,6 @@ func parsePrecedence(precedence Precedence) {
 }
 
 func getRule(tokenType scanner.TokenType) ParseRule {
-	// return ParseRule{}
 	return rules[tokenType]
 }
 
