@@ -1,5 +1,5 @@
-== NEXT
+## NEXT
 * [ ] tagged union
 
-== TODO
+## TODO
 * [ ] add tests
