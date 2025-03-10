@@ -2,7 +2,7 @@
 
 Glox is an implementation of the lox compiler in Go, and is based on the clox compiler written in C (clox).  Lox is the creation of Robert Nystrom (craftinginterpreters.com).
 
-## Major differences from clox:
+## Major differences from clox
   - Go has a gc, hence all memory related stuffs are gone.
   - Go has no pointer arithmetic, hence need to use index.
   - Go does not have enum, hence use const and type.
@@ -19,4 +19,4 @@ Package level variable "rules" depends on binary() in initialication, binary() d
 
 There are two ways to implement a tagged union in Go.  Either use a struct (higher performance?) or an interface (more space efficient).  I picked interface because the implementation is more interesting.
 
-End
+## End
