@@ -2,7 +2,18 @@ package value
 
 import "fmt"
 
-type Value float64
+type ValueType int
+
+const (
+	VAL_BOOL ValueType = iota
+	VAL_NIL
+	VAL_NUMBER
+)
+
+type Value struct {
+	type_ ValueType // promote to export field?
+	as    any       // promote to export field?
+}
 
 type ValueArray struct {
 	Values []Value
