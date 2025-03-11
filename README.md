@@ -8,6 +8,7 @@ Glox is an implementation of the lox compiler in Go, and is based on the clox co
   - Go does not have enum, hence use const and type.
   - Go does not have inline, so define anonymous function in function scope.
   - Go does not have explicit conditional compilation, so at compiler discretion.
+  - Go does not have C-like macro, hence use function instead
 
 ## Pratt Parser
 
