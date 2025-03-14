@@ -23,7 +23,7 @@ func NIL_VAL() Value {
 	return Value{type_: VAL_NIL, val: nil}
 }
 
-func NUMBER_VAL(n int) Value {
+func NUMBER_VAL(n float64) Value {
 	return Value{type_: VAL_NUMBER, val: n}
 }
 
@@ -35,8 +35,8 @@ func AS_BOOL(v Value) bool {
 	return b
 }
 
-func AS_NUMBER(v Value) int {
-	n, ok := v.val.(int)
+func AS_NUMBER(v Value) float64 {
+	n, ok := v.val.(float64)
 	if !ok {
 		panic("Error: AS_BOOL() expects an int value")
 	}
@@ -72,5 +72,5 @@ func FreeValueArrary(array *ValueArray) {
 }
 
 func PrintValue(value Value) {
-	fmt.Printf("%g", value)
+	fmt.Printf("%g", AS_NUMBER(value))
 }

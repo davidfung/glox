@@ -171,7 +171,7 @@ func number() {
 	if err != nil {
 		error(err.Error())
 	}
-	emitConstant(value.Value(val))
+	emitConstant(value.NUMBER_VAL(val))
 }
 
 func unary() {
