@@ -2,6 +2,7 @@ package vm
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/davidfung/glox/chunk"
 	"github.com/davidfung/glox/compiler"
@@ -39,6 +40,16 @@ func resetStack() {
 	vm.stackTop = 0
 }
 
+func runtimeError(format string, args ...any) {
+	fmt.Fprintf(os.Stderr, format, args)
+	fmt.Fprintln(os.Stderr)
+
+	instruction := vm.ip - 1
+	line := vm.chunk.Lines[instruction]
+	fmt.Fprintf(os.Stderr, "[line %d] in script\n", line)
+	resetStack()
+}
+
 func InitVM() {
 	resetStack()
 }
@@ -54,6 +65,10 @@ func push(value value.Value) {
 func pop() value.Value {
 	vm.stackTop--
 	return vm.stack[vm.stackTop]
+}
+
+func peek(distance int) value.Value {
+	return vm.stack[vm.stackTop-1-distance]
 }
 
 func binary_op(op int) {
@@ -126,7 +141,10 @@ func run() InterpretResult {
 		case chunk.OP_DIVIDE:
 			binary_op(BINARY_OP_DIVIDE)
 		case chunk.OP_NEGATE:
-			push(-pop())
+			if !value.IS_NUMBER(peek(0)) {
+				runtimeError("Operand must be a number")
+			}
+			push(value.NUMBER_VAL(-value.AS_NUMBER(pop())))
 		case chunk.OP_RETURN:
 			value.PrintValue(pop())
 			fmt.Printf("\n")
