@@ -71,19 +71,24 @@ func peek(distance int) value.Value {
 	return vm.stack[vm.stackTop-1-distance]
 }
 
-func binary_op(op int) {
-	b := pop()
-	a := pop()
+func binary_op(op int) InterpretResult {
+	if !value.IS_NUMBER(peek(0)) || !value.IS_NUMBER(peek(1)) {
+		runtimeError("Operands must be numbers.")
+		return INTERPRET_RUNTIME_ERROR
+	}
+	b := value.AS_NUMBER(pop())
+	a := value.AS_NUMBER(pop())
 	switch op {
 	case BINARY_OP_ADD:
-		push(a + b)
+		push(value.NUMBER_VAL(a + b))
 	case BINARY_OP_SUBTRACT:
-		push(a - b)
+		push(value.NUMBER_VAL(a - b))
 	case BINARY_OP_MULTIPLY:
-		push(a * b)
+		push(value.NUMBER_VAL(a * b))
 	case BINARY_OP_DIVIDE:
-		push(a / b)
+		push(value.NUMBER_VAL(a / b))
 	}
+	return INTERPRET_OK
 }
 
 func Interpret(source *string) InterpretResult {
@@ -105,6 +110,8 @@ func Interpret(source *string) InterpretResult {
 }
 
 func run() InterpretResult {
+	var result InterpretResult
+
 	readByte := func() uint8 {
 		instruction := vm.chunk.Code[vm.ip]
 		vm.ip++
@@ -133,13 +140,25 @@ func run() InterpretResult {
 			constant := readConstant()
 			push(constant)
 		case chunk.OP_ADD:
-			binary_op(BINARY_OP_ADD)
+			result = binary_op(BINARY_OP_ADD)
+			if result != INTERPRET_OK {
+				return result
+			}
 		case chunk.OP_SUBTRACT:
 			binary_op(BINARY_OP_SUBTRACT)
+			if result != INTERPRET_OK {
+				return result
+			}
 		case chunk.OP_MULTIPLY:
 			binary_op(BINARY_OP_MULTIPLY)
+			if result != INTERPRET_OK {
+				return result
+			}
 		case chunk.OP_DIVIDE:
 			binary_op(BINARY_OP_DIVIDE)
+			if result != INTERPRET_OK {
+				return result
+			}
 		case chunk.OP_NEGATE:
 			if !value.IS_NUMBER(peek(0)) {
 				runtimeError("Operand must be a number")
