@@ -154,6 +154,17 @@ func binary() {
 	}
 }
 
+func literal() {
+	switch parser.previous.Type {
+	case scanner.TOKEN_FALSE:
+		emitByte(chunk.OP_FALSE)
+	case scanner.TOKEN_NIL:
+		emitByte(chunk.OP_NIL)
+	case scanner.TOKEN_TRUE:
+		emitByte(chunk.OP_TRUE)
+	}
+}
+
 func grouping() {
 	expression()
 	consume(scanner.TOKEN_RIGHT_PAREN, "Expect ')' after expression.")
@@ -237,17 +248,17 @@ func initCompiler() {
 		scanner.TOKEN_AND:           {nil, nil, PREC_NONE},
 		scanner.TOKEN_CLASS:         {nil, nil, PREC_NONE},
 		scanner.TOKEN_ELSE:          {nil, nil, PREC_NONE},
-		scanner.TOKEN_FALSE:         {nil, nil, PREC_NONE},
+		scanner.TOKEN_FALSE:         {literal, nil, PREC_NONE},
 		scanner.TOKEN_FOR:           {nil, nil, PREC_NONE},
 		scanner.TOKEN_FUN:           {nil, nil, PREC_NONE},
 		scanner.TOKEN_IF:            {nil, nil, PREC_NONE},
-		scanner.TOKEN_NIL:           {nil, nil, PREC_NONE},
+		scanner.TOKEN_NIL:           {literal, nil, PREC_NONE},
 		scanner.TOKEN_OR:            {nil, nil, PREC_NONE},
 		scanner.TOKEN_PRINT:         {nil, nil, PREC_NONE},
 		scanner.TOKEN_RETURN:        {nil, nil, PREC_NONE},
 		scanner.TOKEN_SUPER:         {nil, nil, PREC_NONE},
 		scanner.TOKEN_THIS:          {nil, nil, PREC_NONE},
-		scanner.TOKEN_TRUE:          {nil, nil, PREC_NONE},
+		scanner.TOKEN_TRUE:          {literal, nil, PREC_NONE},
 		scanner.TOKEN_VAR:           {nil, nil, PREC_NONE},
 		scanner.TOKEN_WHILE:         {nil, nil, PREC_NONE},
 		scanner.TOKEN_ERROR:         {nil, nil, PREC_NONE},

@@ -139,6 +139,12 @@ func run() InterpretResult {
 		case chunk.OP_CONSTANT:
 			constant := readConstant()
 			push(constant)
+		case chunk.OP_NIL:
+			push(value.NIL_VAL())
+		case chunk.OP_TRUE:
+			push(value.BOOL_VAL(true))
+		case chunk.OP_FALSE:
+			push(value.BOOL_VAL(false))
 		case chunk.OP_ADD:
 			result = binary_op(BINARY_OP_ADD)
 			if result != INTERPRET_OK {

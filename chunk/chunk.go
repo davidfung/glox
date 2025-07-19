@@ -2,8 +2,17 @@ package chunk
 
 import "github.com/davidfung/glox/value"
 
+type OpCode uint8
+
+// type Byte interface {
+// 	uint8 | OpCode
+// }
+
 const (
-	OP_CONSTANT = iota
+	OP_CONSTANT uint8 = iota
+	OP_NIL
+	OP_TRUE
+	OP_FALSE
 	OP_ADD
 	OP_SUBTRACT
 	OP_MULTIPLY
