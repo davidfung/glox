@@ -4,12 +4,12 @@ import "github.com/davidfung/glox/value"
 
 type OpCode uint8
 
-// type Byte interface {
-// 	uint8 | OpCode
-// }
+type Byte interface {
+	uint8 | OpCode
+}
 
 const (
-	OP_CONSTANT uint8 = iota
+	OP_CONSTANT OpCode = iota
 	OP_NIL
 	OP_TRUE
 	OP_FALSE
@@ -33,8 +33,8 @@ func InitChunk(chun *Chunk) {
 	value.InitValueArray(&chun.Constants)
 }
 
-func WriteChunk(chun *Chunk, code uint8, line int) {
-	chun.Code = append(chun.Code, code)
+func WriteChunk[B Byte](chun *Chunk, code B, line int) {
+	chun.Code = append(chun.Code, uint8(code))
 	chun.Lines = append(chun.Lines, line)
 }
 

@@ -134,7 +134,7 @@ func run() InterpretResult {
 			debugger.DisassembleInstruction(vm.chunk, vm.ip)
 		}
 
-		instruction := readByte()
+		instruction := chunk.OpCode(readByte())
 		switch instruction {
 		case chunk.OP_CONSTANT:
 			constant := readConstant()

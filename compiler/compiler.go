@@ -100,11 +100,11 @@ func consume(typ scanner.TokenType, message string) {
 	errorAtCurrent(message)
 }
 
-func emitByte(byte_ uint8) {
+func emitByte[B chunk.Byte](byte_ B) {
 	chunk.WriteChunk(currentChunk(), byte_, parser.previous.Line)
 }
 
-func emitBytes(byte1 uint8, byte2 uint8) {
+func emitBytes[B1 chunk.Byte, B2 chunk.Byte](byte1 B1, byte2 B2) {
 	emitByte(byte1)
 	emitByte(byte2)
 }

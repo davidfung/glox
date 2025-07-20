@@ -33,7 +33,7 @@ func DisassembleInstruction(chun *chunk.Chunk, offset int) int {
 		fmt.Printf("%4d ", chun.Lines[offset])
 	}
 
-	instruction := chun.Code[offset]
+	instruction := chunk.OpCode(chun.Code[offset])
 	switch instruction {
 	case chunk.OP_CONSTANT:
 		return constantInstruction("OP_CONSTANT", chun, offset)
