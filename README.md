@@ -20,4 +20,10 @@ Package level variable "rules" depends on binary() in initialication, binary() d
 
 There are two ways to implement a tagged union in Go.  Either use a struct (higher performance?) or an interface (more space efficient).  I picked interface because the implementation is more interesting.
 
+## Chunk OpCode
+
+In order to add a type to the chunk opcode structure, will need to create a type interface and use
+type constraint in other functions such as writeByte() and writeBytes(), because the parameters that
+they take can be an opCode or a data byte (uint8)
+
 ## End

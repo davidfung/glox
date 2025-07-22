@@ -2,4 +2,5 @@
 * [ ] tagged union
 
 ## TODO
-* [ ] add tests
+* [ ] add test
+* [ ] crash on multiline source file: slice bounds out of range
