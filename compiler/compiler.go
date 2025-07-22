@@ -193,6 +193,8 @@ func unary() {
 
 	// Emit the operator instruction.
 	switch operatorType {
+	case scanner.TOKEN_BANG:
+		emitByte(chunk.OP_NOT)
 	case scanner.TOKEN_MINUS:
 		emitByte(chunk.OP_NEGATE)
 	default: // Unreachable
@@ -234,7 +236,7 @@ func initCompiler() {
 		scanner.TOKEN_SEMICOLON:     {nil, nil, PREC_NONE},
 		scanner.TOKEN_SLASH:         {nil, binary, PREC_FACTOR},
 		scanner.TOKEN_STAR:          {nil, binary, PREC_FACTOR},
-		scanner.TOKEN_BANG:          {nil, nil, PREC_NONE},
+		scanner.TOKEN_BANG:          {unary, nil, PREC_NONE},
 		scanner.TOKEN_BANG_EQUAL:    {nil, nil, PREC_NONE},
 		scanner.TOKEN_EQUAL:         {nil, nil, PREC_NONE},
 		scanner.TOKEN_EQUAL_EQUAL:   {nil, nil, PREC_NONE},

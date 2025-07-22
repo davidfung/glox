@@ -71,6 +71,10 @@ func peek(distance int) value.Value {
 	return vm.stack[vm.stackTop-1-distance]
 }
 
+func isFalsey(val value.Value) bool {
+	return value.IS_NIL(val) || value.IS_BOOL(val) && !value.AS_BOOL(val)
+}
+
 func binary_op(op int) InterpretResult {
 	if !value.IS_NUMBER(peek(0)) || !value.IS_NUMBER(peek(1)) {
 		runtimeError("Operands must be numbers.")
@@ -165,6 +169,8 @@ func run() InterpretResult {
 			if result != INTERPRET_OK {
 				return result
 			}
+		case chunk.OP_NOT:
+			push(value.BOOL_VAL(isFalsey(pop())))
 		case chunk.OP_NEGATE:
 			if !value.IS_NUMBER(peek(0)) {
 				runtimeError("Operand must be a number")
