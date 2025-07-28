@@ -8,7 +8,9 @@ Glox is an implementation of the lox compiler in Go, and is based on the clox co
   - Go does not have enum, hence use const and type.
   - Go does not have inline, so define anonymous function in function scope.
   - Go does not have explicit conditional compilation, so at compiler discretion.
-  - Go does not have C-like macro, hence use function instead
+  - Go does not have C-like macro, hence use function instead.
+  - Go does not use header files, hence stuffs put in .h will be put in the corresponding .go file instead.
+  - Go nil replaces C NULL.
 
 ## Pratt Parser
 
@@ -25,5 +27,10 @@ There are two ways to implement a tagged union in Go.  Either use a struct (high
 In order to add a type to the chunk opcode structure, will need to create a type interface and use
 type constraint in other functions such as writeByte() and writeBytes(), because the parameters that
 they take can be an opCode or a data byte (uint8)
+
+## BINARY_OP macro in vm.c
+
+It is difficult to convert the BINARY_OP macro in vm.c to Go becuase the macro takes another macro
+and an operator as parameters.  There is no way to pass an operator as a function argument in Go.
 
 ## End

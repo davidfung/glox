@@ -85,3 +85,19 @@ func PrintValue(value Value) {
 		fmt.Printf("%g", AS_NUMBER(value))
 	}
 }
+
+func ValuesEqual(a Value, b Value) bool {
+	if a.type_ != b.type_ {
+		return false
+	}
+	switch a.type_ {
+	case VAL_BOOL:
+		return AS_BOOL(a) == AS_BOOL(b)
+	case VAL_NIL:
+		return true
+	case VAL_NUMBER:
+		return AS_NUMBER(a) == AS_NUMBER(b)
+	default:
+		return false
+	}
+}

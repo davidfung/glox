@@ -141,6 +141,18 @@ func binary() {
 	parsePrecedence(rule.precedence + 1)
 
 	switch operatorType {
+	case scanner.TOKEN_BANG_EQUAL:
+		emitBytes(chunk.OP_EQUAL, chunk.OP_NOT)
+	case scanner.TOKEN_EQUAL_EQUAL:
+		emitByte(chunk.OP_EQUAL)
+	case scanner.TOKEN_GREATER:
+		emitByte(chunk.OP_GREATER)
+	case scanner.TOKEN_GREATER_EQUAL:
+		emitBytes(chunk.OP_LESS, chunk.OP_NOT)
+	case scanner.TOKEN_LESS:
+		emitByte(chunk.OP_LESS)
+	case scanner.TOKEN_LESS_EQUAL:
+		emitBytes(chunk.OP_GREATER, chunk.OP_NOT)
 	case scanner.TOKEN_PLUS:
 		emitByte(chunk.OP_ADD)
 	case scanner.TOKEN_MINUS:
@@ -237,13 +249,13 @@ func initCompiler() {
 		scanner.TOKEN_SLASH:         {nil, binary, PREC_FACTOR},
 		scanner.TOKEN_STAR:          {nil, binary, PREC_FACTOR},
 		scanner.TOKEN_BANG:          {unary, nil, PREC_NONE},
-		scanner.TOKEN_BANG_EQUAL:    {nil, nil, PREC_NONE},
+		scanner.TOKEN_BANG_EQUAL:    {nil, binary, PREC_EQUALITY},
 		scanner.TOKEN_EQUAL:         {nil, nil, PREC_NONE},
-		scanner.TOKEN_EQUAL_EQUAL:   {nil, nil, PREC_NONE},
-		scanner.TOKEN_GREATER:       {nil, nil, PREC_NONE},
-		scanner.TOKEN_GREATER_EQUAL: {nil, nil, PREC_NONE},
-		scanner.TOKEN_LESS:          {nil, nil, PREC_NONE},
-		scanner.TOKEN_LESS_EQUAL:    {nil, nil, PREC_NONE},
+		scanner.TOKEN_EQUAL_EQUAL:   {nil, binary, PREC_EQUALITY},
+		scanner.TOKEN_GREATER:       {nil, binary, PREC_COMPARISON},
+		scanner.TOKEN_GREATER_EQUAL: {nil, binary, PREC_COMPARISON},
+		scanner.TOKEN_LESS:          {nil, binary, PREC_COMPARISON},
+		scanner.TOKEN_LESS_EQUAL:    {nil, binary, PREC_COMPARISON},
 		scanner.TOKEN_IDENTIFIER:    {nil, nil, PREC_NONE},
 		scanner.TOKEN_STRING:        {nil, nil, PREC_NONE},
 		scanner.TOKEN_NUMBER:        {number, nil, PREC_NONE},

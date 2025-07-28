@@ -27,11 +27,15 @@ const (
 	INTERPRET_RUNTIME_ERROR
 )
 
+type BinaryOp int
+
 const (
-	BINARY_OP_ADD = iota
+	BINARY_OP_ADD BinaryOp = iota
 	BINARY_OP_SUBTRACT
 	BINARY_OP_MULTIPLY
 	BINARY_OP_DIVIDE
+	BINARY_OP_GREATER
+	BINARY_OP_LESS
 )
 
 var vm VM
@@ -75,7 +79,7 @@ func isFalsey(val value.Value) bool {
 	return value.IS_NIL(val) || value.IS_BOOL(val) && !value.AS_BOOL(val)
 }
 
-func binary_op(op int) InterpretResult {
+func binary_op(op BinaryOp) InterpretResult {
 	if !value.IS_NUMBER(peek(0)) || !value.IS_NUMBER(peek(1)) {
 		runtimeError("Operands must be numbers.")
 		return INTERPRET_RUNTIME_ERROR
@@ -91,6 +95,10 @@ func binary_op(op int) InterpretResult {
 		push(value.NUMBER_VAL(a * b))
 	case BINARY_OP_DIVIDE:
 		push(value.NUMBER_VAL(a / b))
+	case BINARY_OP_GREATER:
+		push(value.BOOL_VAL(a > b))
+	case BINARY_OP_LESS:
+		push(value.BOOL_VAL(a < b))
 	}
 	return INTERPRET_OK
 }
@@ -149,23 +157,37 @@ func run() InterpretResult {
 			push(value.BOOL_VAL(true))
 		case chunk.OP_FALSE:
 			push(value.BOOL_VAL(false))
+		case chunk.OP_EQUAL:
+			a := pop()
+			b := pop()
+			push(value.BOOL_VAL(value.ValuesEqual(a, b)))
+		case chunk.OP_GREATER:
+			result = binary_op(BINARY_OP_GREATER)
+			if result != INTERPRET_OK {
+				return result
+			}
+		case chunk.OP_LESS:
+			result = binary_op(BINARY_OP_LESS)
+			if result != INTERPRET_OK {
+				return result
+			}
 		case chunk.OP_ADD:
 			result = binary_op(BINARY_OP_ADD)
 			if result != INTERPRET_OK {
 				return result
 			}
 		case chunk.OP_SUBTRACT:
-			binary_op(BINARY_OP_SUBTRACT)
+			result = binary_op(BINARY_OP_SUBTRACT)
 			if result != INTERPRET_OK {
 				return result
 			}
 		case chunk.OP_MULTIPLY:
-			binary_op(BINARY_OP_MULTIPLY)
+			result = binary_op(BINARY_OP_MULTIPLY)
 			if result != INTERPRET_OK {
 				return result
 			}
 		case chunk.OP_DIVIDE:
-			binary_op(BINARY_OP_DIVIDE)
+			result = binary_op(BINARY_OP_DIVIDE)
 			if result != INTERPRET_OK {
 				return result
 			}
