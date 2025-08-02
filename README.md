@@ -20,27 +20,26 @@ Package level variable "rules" depends on binary() in initialication, binary() d
 
 ## Tagged Union
 
-There are two ways to implement a tagged union in Go.  Either use a struct 
-(higher performance?) or an interface (more space efficient).  I picked 
-interface because the implementation is more interesting.
+There are two ways to implement a tagged union in Go.  Either use a struct (higher performance?) or an interface (more space efficient).  I picked interface because the implementation is more interesting.
 
 ## Chunk OpCode
 
-In order to add a type to the chunk opcode structure, will need to create a type 
-interface and use type constraint in other functions such as writeByte() and 
-writeBytes(), because the parameters that they take can be an opCode or a data
-byte (uint8).
+In order to add a type to the chunk opcode structure, will need to create a type interface and use type constraint in other functions such as writeByte() and writeBytes(), because the parameters that they take can be an opCode or a data byte (uint8).
 
 ## BINARY_OP Macro
 
-It is not straightforward to convert the BINARY_OP macro in vm.c to Go becuase 
-the macro takes a macro and an operator as parameters.  
+It is not straightforward to convert the BINARY_OP macro in vm.c to Go becuase the macro takes a macro and an operator as parameters.  
 
-Typically a C macro is converted to a Go function.  A C macro does not have 
-type because it is just text substitution.  But a Go function is statically 
-typed.  It is impossible to convert a C macro which takes an arbitrary function
-as a parameter.
+Typically a C macro is converted to a Go function.  A C macro does not have type because it is just text substitution.  But a Go function is statically typed.  It is impossible to convert a C macro which takes an arbitrary function as a parameter.
 
 Also there is no way to pass an operator as a function argument in Go.
+
+## Import Cycle
+
+There is an import cycle between value.go and object.go.  The cycle is broken by moving code from object.go to value.go.
+
+## Struct Inheritance
+
+Like tagged union, we use interface to implement struct inheritance in clox.
 
 ## End

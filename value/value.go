@@ -1,6 +1,10 @@
 package value
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/davidfung/glox/object"
+)
 
 type ValueType int
 
@@ -8,6 +12,7 @@ const (
 	VAL_BOOL ValueType = iota
 	VAL_NIL
 	VAL_NUMBER
+	VAL_OBJ
 )
 
 type Value struct {
@@ -27,6 +32,50 @@ func NUMBER_VAL(n float64) Value {
 	return Value{type_: VAL_NUMBER, val: n}
 }
 
+func OBJ_VAL(obj object.Obj) Value {
+	return Value{type_: VAL_OBJ, val: obj}
+}
+
+func IS_BOOL(v Value) bool {
+	return v.type_ == VAL_BOOL
+}
+
+func IS_NIL(v Value) bool {
+	return v.type_ == VAL_NIL
+}
+
+func IS_NUMBER(v Value) bool {
+	return v.type_ == VAL_NUMBER
+}
+
+func IS_OBJ(v Value) bool {
+	return v.type_ == VAL_OBJ
+}
+
+func IS_STRING(v Value) bool {
+	return IsObjType(v, object.OBJ_STRING)
+}
+
+func IsObjType(val Value, type_ object.ObjType) bool {
+	return IS_OBJ(val) && AS_OBJ(val).Type_ == type_
+}
+
+func AS_OBJ(v Value) object.Obj {
+	obj, ok := v.val.(object.Obj)
+	if !ok {
+		panic("Error: AS_OBJ() expects an object value")
+	}
+	return obj
+}
+
+func AS_STRING(v Value) string {
+	s, ok := v.val.(string)
+	if !ok {
+		panic("Error: AS_STRING() expects a string object")
+	}
+	return s
+}
+
 func AS_BOOL(v Value) bool {
 	b, ok := v.val.(bool)
 	if !ok {
@@ -43,16 +92,8 @@ func AS_NUMBER(v Value) float64 {
 	return n
 }
 
-func IS_BOOL(v Value) bool {
-	return v.type_ == VAL_BOOL
-}
-
-func IS_NIL(v Value) bool {
-	return v.type_ == VAL_NIL
-}
-
-func IS_NUMBER(v Value) bool {
-	return v.type_ == VAL_NUMBER
+func OBJ_TYPE(val Value) object.ObjType {
+	return AS_OBJ(val).Type_
 }
 
 type ValueArray struct {
