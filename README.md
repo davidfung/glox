@@ -11,6 +11,7 @@ Glox is an implementation of the lox compiler in Go, and is based on the clox co
   - Go does not have C-like macro, hence use function instead.
   - Go does not use header files, hence stuffs put in .h will be put in the corresponding .go file instead.
   - Go nil replaces C NULL.
+  - Go use Uppercase for export symbols.
 
 ## Pratt Parser
 
@@ -41,5 +42,16 @@ There is an import cycle between value.go and object.go.  The cycle is broken by
 ## Struct Inheritance
 
 Like tagged union, we use interface to implement struct inheritance in clox.
+
+## Keywords
+
+Some words are keywords in Go but not in C.  So have to be named differently:
+
+  - type -> type_
+  - string() -> str()
+
+## Objects
+
+clox ObjString translated to Go regular string.
 
 ## End

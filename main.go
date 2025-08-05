@@ -9,8 +9,8 @@ import (
 	"github.com/davidfung/glox/vm"
 )
 
-const versionMajor = 0
-const versionMinor = 4
+const versionMajor = 19
+const versionMinor = 3
 const versionPatch = 0
 
 func repl() {

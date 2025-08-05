@@ -8,6 +8,7 @@ import (
 
 	"github.com/davidfung/glox/chunk"
 	"github.com/davidfung/glox/debugger"
+	"github.com/davidfung/glox/object"
 	"github.com/davidfung/glox/scanner"
 	"github.com/davidfung/glox/value"
 )
@@ -197,6 +198,12 @@ func number() {
 	emitConstant(value.NUMBER_VAL(val))
 }
 
+func str() {
+	// Create a string object, wrap it in a Value, and stuff
+	// the value into the constant table.
+	emitConstant(value.OBJ_VAL(object.CopyString(parser.previous.Source, parser.previous.Start+1, parser.previous.Length-2)))
+}
+
 func unary() {
 	operatorType := parser.previous.Type
 
@@ -257,7 +264,7 @@ func initCompiler() {
 		scanner.TOKEN_LESS:          {nil, binary, PREC_COMPARISON},
 		scanner.TOKEN_LESS_EQUAL:    {nil, binary, PREC_COMPARISON},
 		scanner.TOKEN_IDENTIFIER:    {nil, nil, PREC_NONE},
-		scanner.TOKEN_STRING:        {nil, nil, PREC_NONE},
+		scanner.TOKEN_STRING:        {str, nil, PREC_NONE},
 		scanner.TOKEN_NUMBER:        {number, nil, PREC_NONE},
 		scanner.TOKEN_AND:           {nil, nil, PREC_NONE},
 		scanner.TOKEN_CLASS:         {nil, nil, PREC_NONE},
