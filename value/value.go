@@ -124,6 +124,8 @@ func PrintValue(value Value) {
 		fmt.Printf("nil")
 	case VAL_NUMBER:
 		fmt.Printf("%g", AS_NUMBER(value))
+	case VAL_OBJ:
+		printObject(value)
 	}
 }
 
@@ -140,5 +142,12 @@ func ValuesEqual(a Value, b Value) bool {
 		return AS_NUMBER(a) == AS_NUMBER(b)
 	default:
 		return false
+	}
+}
+
+func printObject(val Value) {
+	switch OBJ_TYPE(val) {
+	case object.OBJ_STRING:
+		fmt.Printf("%s", AS_STRING(val))
 	}
 }
