@@ -144,6 +144,10 @@ func ValuesEqual(a Value, b Value) bool {
 		return true
 	case VAL_NUMBER:
 		return AS_NUMBER(a) == AS_NUMBER(b)
+	case VAL_OBJ:
+		s1 := AS_STRING(a)
+		s2 := AS_STRING(b)
+		return s1 == s2
 	default:
 		return false
 	}
