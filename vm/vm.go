@@ -79,6 +79,10 @@ func isFalsey(val value.Value) bool {
 	return value.IS_NIL(val) || value.IS_BOOL(val) && !value.AS_BOOL(val)
 }
 
+func concatenate() InterpretResult {
+	return INTERPRET_OK
+}
+
 func binary_op(op BinaryOp) InterpretResult {
 	if !value.IS_NUMBER(peek(0)) || !value.IS_NUMBER(peek(1)) {
 		runtimeError("Operands must be numbers.")
@@ -172,10 +176,18 @@ func run() InterpretResult {
 				return result
 			}
 		case chunk.OP_ADD:
-			result = binary_op(BINARY_OP_ADD)
+			if value.IS_STRING(peek(0)) && value.IS_STRING(peek(1)) {
+				result = concatenate()
+			} else if value.IS_NUMBER(peek(0)) && value.IS_NUMBER(peek(1)) {
+				result = binary_op(BINARY_OP_ADD)
+			} else {
+				runtimeError("Operands must be two numbers or two strings.")
+				return INTERPRET_RUNTIME_ERROR
+			}
 			if result != INTERPRET_OK {
 				return result
 			}
+
 		case chunk.OP_SUBTRACT:
 			result = binary_op(BINARY_OP_SUBTRACT)
 			if result != INTERPRET_OK {
