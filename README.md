@@ -12,6 +12,7 @@ Glox is an implementation of the lox compiler in Go, and is based on the clox co
   - Go does not use header files, hence stuffs put in .h will be put in the corresponding .go file instead.
   - Go nil replaces C NULL.
   - Go use Uppercase for export symbols.
+  - Skip implementing hash map and string interning in glox.
 
 ## Pratt Parser
 
