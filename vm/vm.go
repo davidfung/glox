@@ -7,6 +7,7 @@ import (
 	"github.com/davidfung/glox/chunk"
 	"github.com/davidfung/glox/compiler"
 	"github.com/davidfung/glox/debugger"
+	"github.com/davidfung/glox/object"
 	"github.com/davidfung/glox/value"
 )
 
@@ -80,6 +81,12 @@ func isFalsey(val value.Value) bool {
 }
 
 func concatenate() InterpretResult {
+	b := value.AS_STRING(pop())
+	a := value.AS_STRING(pop())
+	c := a + b
+	o := object.Obj{Type_: object.OBJ_STRING, Val: c}
+	v := value.OBJ_VAL(o)
+	push(v)
 	return INTERPRET_OK
 }
 

@@ -50,8 +50,8 @@ Some words are keywords in Go but not in C.  So have to be named differently:
   - type -> type_
   - string() -> str()
 
-## Objects
+## ObjString
 
-clox ObjString translated to Go regular string.
+  clox ObjString translated to Go regular string, because there is no need to keep any housekeeping info for the string.
 
 ## End
