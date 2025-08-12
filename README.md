@@ -15,6 +15,10 @@ Glox is an implementation of the lox compiler in Go, and is based on the clox co
   - Although no need to implement the hash map mechanics in Go, still have to implement the hashmap access api.
   - string interning: do we need to implement that in Go?
 
+## Implementation
+
+Although some mechanics required by C is not necessary in Go, we still choose to implement some of them as a programming exercise as well as to mirror the struct of clox as much as reasonable.
+
 ## Pratt Parser
 
 In the C code, use forward declaration to handle a declaration cycle in the Pratt Parser.  In Go, use an init() to fix the invalid initialization cycle:
