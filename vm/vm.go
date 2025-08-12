@@ -84,7 +84,7 @@ func concatenate() InterpretResult {
 	b := value.AS_STRING(pop())
 	a := value.AS_STRING(pop())
 	c := a + b
-	o := object.Obj{Type_: object.OBJ_STRING, Val: c}
+	o := object.Obj{Type_: object.OBJ_STRING, Val: object.ObjString{Chars: c}}
 	v := value.OBJ_VAL(o)
 	push(v)
 	return INTERPRET_OK

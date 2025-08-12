@@ -73,10 +73,11 @@ func AS_STRING(v Value) string {
 	if !ok {
 		panic("Error: AS_STRING() expects an object in a value")
 	}
-	s, ok := obj.Val.(string)
+	strobj, ok := obj.Val.(object.ObjString)
 	if !ok {
-		panic("Error: AS_STRING() expects a string object in a value")
+		panic("Error: AS_STRING() expects a string object")
 	}
+	s := strobj.Chars
 	return s
 }
 

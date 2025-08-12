@@ -39,21 +39,25 @@ Also there is no way to pass an operator as a function argument in Go.
 
 ## Import Cycle
 
-There is an import cycle between value.go and object.go.  The cycle is broken by moving code from object.go to value.go.
+There is an import cycle between value.go and object.go.  The cycle is broken by moving code from object.go to value.go, including but not limited to:
+
+  - printOjbect(Value)
 
 ## Struct Inheritance
 
 Like tagged union, we use interface to implement struct inheritance in clox.
+
+## ObjString
+
+We do not keep the length field in ObjString.
 
 ## Keywords
 
 Some words are keywords in Go but not in C.  So have to be named differently:
 
   - type -> type_
-  - string() -> str()
 
-## ObjString
-
-  clox ObjString translated to Go regular string, because there is no need to keep any housekeeping info for the string.
+  - compiler.go
+    - string() -> str()
 
 ## End

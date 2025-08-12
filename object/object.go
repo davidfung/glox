@@ -11,8 +11,13 @@ type Obj struct {
 	Val   any
 }
 
+type ObjString struct {
+	Chars string
+	hash  uint32
+}
+
 func CopyString(s *string, start int, len int) Obj {
 	d := (*s)[start : start+len]
-	o := Obj{Type_: OBJ_STRING, Val: d}
+	o := Obj{Type_: OBJ_STRING, Val: ObjString{Chars: d}}
 	return o
 }
