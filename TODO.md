@@ -1,6 +1,5 @@
 ## NEXT
-- Hashing strings 20.4.1
-- object.c copyString() -> allocateString() -> hash function
+- Inserting entries 20.4.2
 
 ## TODO
 - add tests
