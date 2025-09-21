@@ -16,40 +16,40 @@ const (
 )
 
 type Value struct {
-	type_ ValueType // promote to export field?
-	val   any       // promote to export field?
+	Type_ ValueType // promote to export field?
+	Val   any       // promote to export field?
 }
 
 func BOOL_VAL(b bool) Value {
-	return Value{type_: VAL_BOOL, val: b}
+	return Value{Type_: VAL_BOOL, Val: b}
 }
 
 func NIL_VAL() Value {
-	return Value{type_: VAL_NIL, val: nil}
+	return Value{Type_: VAL_NIL, Val: nil}
 }
 
 func NUMBER_VAL(n float64) Value {
-	return Value{type_: VAL_NUMBER, val: n}
+	return Value{Type_: VAL_NUMBER, Val: n}
 }
 
 func OBJ_VAL(obj object.Obj) Value {
-	return Value{type_: VAL_OBJ, val: obj}
+	return Value{Type_: VAL_OBJ, Val: obj}
 }
 
 func IS_BOOL(v Value) bool {
-	return v.type_ == VAL_BOOL
+	return v.Type_ == VAL_BOOL
 }
 
 func IS_NIL(v Value) bool {
-	return v.type_ == VAL_NIL
+	return v.Type_ == VAL_NIL
 }
 
 func IS_NUMBER(v Value) bool {
-	return v.type_ == VAL_NUMBER
+	return v.Type_ == VAL_NUMBER
 }
 
 func IS_OBJ(v Value) bool {
-	return v.type_ == VAL_OBJ
+	return v.Type_ == VAL_OBJ
 }
 
 func IS_STRING(v Value) bool {
@@ -61,7 +61,7 @@ func IsObjType(val Value, type_ object.ObjType) bool {
 }
 
 func AS_OBJ(v Value) object.Obj {
-	obj, ok := v.val.(object.Obj)
+	obj, ok := v.Val.(object.Obj)
 	if !ok {
 		panic("Error: AS_OBJ() expects an object value")
 	}
@@ -69,7 +69,7 @@ func AS_OBJ(v Value) object.Obj {
 }
 
 func AS_STRING(v Value) string {
-	obj, ok := v.val.(object.Obj)
+	obj, ok := v.Val.(object.Obj)
 	if !ok {
 		panic("Error: AS_STRING() expects an object in a value")
 	}
@@ -77,12 +77,11 @@ func AS_STRING(v Value) string {
 	if !ok {
 		panic("Error: AS_STRING() expects a string object")
 	}
-	s := strobj.Chars
-	return s
+	return string(strobj)
 }
 
 func AS_BOOL(v Value) bool {
-	b, ok := v.val.(bool)
+	b, ok := v.Val.(bool)
 	if !ok {
 		panic("Error: AS_BOOL() expects a boolean value")
 	}
@@ -90,7 +89,7 @@ func AS_BOOL(v Value) bool {
 }
 
 func AS_NUMBER(v Value) float64 {
-	n, ok := v.val.(float64)
+	n, ok := v.Val.(float64)
 	if !ok {
 		panic("Error: AS_NUMBER() expects an int value")
 	}
@@ -118,7 +117,7 @@ func FreeValueArrary(array *ValueArray) {
 }
 
 func PrintValue(value Value) {
-	switch value.type_ {
+	switch value.Type_ {
 	case VAL_BOOL:
 		if AS_BOOL(value) {
 			fmt.Printf("true")
@@ -135,10 +134,10 @@ func PrintValue(value Value) {
 }
 
 func ValuesEqual(a Value, b Value) bool {
-	if a.type_ != b.type_ {
+	if a.Type_ != b.Type_ {
 		return false
 	}
-	switch a.type_ {
+	switch a.Type_ {
 	case VAL_BOOL:
 		return AS_BOOL(a) == AS_BOOL(b)
 	case VAL_NIL:

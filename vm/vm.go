@@ -46,7 +46,7 @@ func resetStack() {
 }
 
 func runtimeError(format string, args ...any) {
-	fmt.Fprintf(os.Stderr, format, args)
+	fmt.Fprintf(os.Stderr, format, args...)
 	fmt.Fprintln(os.Stderr)
 
 	instruction := vm.ip - 1
@@ -84,7 +84,7 @@ func concatenate() InterpretResult {
 	b := value.AS_STRING(pop())
 	a := value.AS_STRING(pop())
 	c := a + b
-	o := object.Obj{Type_: object.OBJ_STRING, Val: object.ObjString{Chars: c}}
+	o := object.Obj{Type_: object.OBJ_STRING, Val: c}
 	v := value.OBJ_VAL(o)
 	push(v)
 	return INTERPRET_OK
