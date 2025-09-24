@@ -3,6 +3,7 @@ package table
 import (
 	"testing"
 
+	"github.com/davidfung/glox/objval"
 	"github.com/davidfung/glox/value"
 )
 
@@ -36,12 +37,12 @@ func TestTable(t *testing.T) {
 	}
 
 	val, found := TableGet(&table, "hello")
-	if value.AS_NUMBER(val) != float64(1) || !found {
+	if objval.AS_NUMBER(val) != float64(1) || !found {
 		t.Error("Table entry retrival error")
 	}
 
 	val, found = TableGet(&table2, "world")
-	if value.AS_NUMBER(val) != float64(1) || !found {
+	if objval.AS_NUMBER(val) != float64(1) || !found {
 		t.Error("Table entry retrival error")
 	}
 

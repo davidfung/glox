@@ -1,11 +1,5 @@
 package value
 
-import (
-	"fmt"
-
-	"github.com/davidfung/glox/object"
-)
-
 type ValueType int
 
 const (
@@ -18,86 +12,6 @@ const (
 type Value struct {
 	Type_ ValueType // promote to export field?
 	Val   any       // promote to export field?
-}
-
-func BOOL_VAL(b bool) Value {
-	return Value{Type_: VAL_BOOL, Val: b}
-}
-
-func NIL_VAL() Value {
-	return Value{Type_: VAL_NIL, Val: nil}
-}
-
-func NUMBER_VAL(n float64) Value {
-	return Value{Type_: VAL_NUMBER, Val: n}
-}
-
-func OBJ_VAL(obj object.Obj) Value {
-	return Value{Type_: VAL_OBJ, Val: obj}
-}
-
-func IS_BOOL(v Value) bool {
-	return v.Type_ == VAL_BOOL
-}
-
-func IS_NIL(v Value) bool {
-	return v.Type_ == VAL_NIL
-}
-
-func IS_NUMBER(v Value) bool {
-	return v.Type_ == VAL_NUMBER
-}
-
-func IS_OBJ(v Value) bool {
-	return v.Type_ == VAL_OBJ
-}
-
-func IS_STRING(v Value) bool {
-	return IsObjType(v, object.OBJ_STRING)
-}
-
-func IsObjType(val Value, type_ object.ObjType) bool {
-	return IS_OBJ(val) && AS_OBJ(val).Type_ == type_
-}
-
-func AS_OBJ(v Value) object.Obj {
-	obj, ok := v.Val.(object.Obj)
-	if !ok {
-		panic("Error: AS_OBJ() expects an object value")
-	}
-	return obj
-}
-
-func AS_STRING(v Value) string {
-	obj, ok := v.Val.(object.Obj)
-	if !ok {
-		panic("Error: AS_STRING() expects an object in a value")
-	}
-	strobj, ok := obj.Val.(object.ObjString)
-	if !ok {
-		panic("Error: AS_STRING() expects a string object")
-	}
-	return string(strobj)
-}
-
-func AS_BOOL(v Value) bool {
-	b, ok := v.Val.(bool)
-	if !ok {
-		panic("Error: AS_BOOL() expects a boolean value")
-	}
-	return b
-}
-
-func AS_NUMBER(v Value) float64 {
-	n, ok := v.Val.(float64)
-	if !ok {
-		panic("Error: AS_NUMBER() expects an int value")
-	}
-	return n
-}
-
-func OBJ_TYPE(val Value) object.ObjType {
-	return AS_OBJ(val).Type_
 }
 
 type ValueArray struct {
@@ -114,48 +28,4 @@ func WriteValueArray(array *ValueArray, value Value) {
 
 func FreeValueArrary(array *ValueArray) {
 	InitValueArray(array)
-}
-
-func PrintValue(value Value) {
-	switch value.Type_ {
-	case VAL_BOOL:
-		if AS_BOOL(value) {
-			fmt.Printf("true")
-		} else {
-			fmt.Printf("false")
-		}
-	case VAL_NIL:
-		fmt.Printf("nil")
-	case VAL_NUMBER:
-		fmt.Printf("%g", AS_NUMBER(value))
-	case VAL_OBJ:
-		printObject(value)
-	}
-}
-
-func ValuesEqual(a Value, b Value) bool {
-	if a.Type_ != b.Type_ {
-		return false
-	}
-	switch a.Type_ {
-	case VAL_BOOL:
-		return AS_BOOL(a) == AS_BOOL(b)
-	case VAL_NIL:
-		return true
-	case VAL_NUMBER:
-		return AS_NUMBER(a) == AS_NUMBER(b)
-	case VAL_OBJ:
-		s1 := AS_STRING(a)
-		s2 := AS_STRING(b)
-		return s1 == s2
-	default:
-		return false
-	}
-}
-
-func printObject(val Value) {
-	switch OBJ_TYPE(val) {
-	case object.OBJ_STRING:
-		fmt.Printf("%s", AS_STRING(val))
-	}
 }

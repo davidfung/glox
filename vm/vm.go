@@ -8,6 +8,7 @@ import (
 	"github.com/davidfung/glox/compiler"
 	"github.com/davidfung/glox/debugger"
 	"github.com/davidfung/glox/object"
+	"github.com/davidfung/glox/objval"
 	"github.com/davidfung/glox/value"
 )
 
@@ -77,39 +78,39 @@ func peek(distance int) value.Value {
 }
 
 func isFalsey(val value.Value) bool {
-	return value.IS_NIL(val) || value.IS_BOOL(val) && !value.AS_BOOL(val)
+	return objval.IS_NIL(val) || objval.IS_BOOL(val) && !objval.AS_BOOL(val)
 }
 
 func concatenate() InterpretResult {
-	b := value.AS_STRING(pop())
-	a := value.AS_STRING(pop())
+	b := objval.AS_STRING(pop())
+	a := objval.AS_STRING(pop())
 	c := a + b
 	o := object.Obj{Type_: object.OBJ_STRING, Val: c}
-	v := value.OBJ_VAL(o)
+	v := objval.OBJ_VAL(o)
 	push(v)
 	return INTERPRET_OK
 }
 
 func binary_op(op BinaryOp) InterpretResult {
-	if !value.IS_NUMBER(peek(0)) || !value.IS_NUMBER(peek(1)) {
+	if !objval.IS_NUMBER(peek(0)) || !objval.IS_NUMBER(peek(1)) {
 		runtimeError("Operands must be numbers.")
 		return INTERPRET_RUNTIME_ERROR
 	}
-	b := value.AS_NUMBER(pop())
-	a := value.AS_NUMBER(pop())
+	b := objval.AS_NUMBER(pop())
+	a := objval.AS_NUMBER(pop())
 	switch op {
 	case BINARY_OP_ADD:
-		push(value.NUMBER_VAL(a + b))
+		push(objval.NUMBER_VAL(a + b))
 	case BINARY_OP_SUBTRACT:
-		push(value.NUMBER_VAL(a - b))
+		push(objval.NUMBER_VAL(a - b))
 	case BINARY_OP_MULTIPLY:
-		push(value.NUMBER_VAL(a * b))
+		push(objval.NUMBER_VAL(a * b))
 	case BINARY_OP_DIVIDE:
-		push(value.NUMBER_VAL(a / b))
+		push(objval.NUMBER_VAL(a / b))
 	case BINARY_OP_GREATER:
-		push(value.BOOL_VAL(a > b))
+		push(objval.BOOL_VAL(a > b))
 	case BINARY_OP_LESS:
-		push(value.BOOL_VAL(a < b))
+		push(objval.BOOL_VAL(a < b))
 	}
 	return INTERPRET_OK
 }
@@ -150,7 +151,7 @@ func run() InterpretResult {
 			fmt.Printf("         ")
 			for i := 0; i < vm.stackTop; i++ {
 				fmt.Printf("[")
-				value.PrintValue(vm.stack[i])
+				objval.PrintValue(vm.stack[i])
 				fmt.Printf("]")
 			}
 			fmt.Printf("\n")
@@ -163,15 +164,15 @@ func run() InterpretResult {
 			constant := readConstant()
 			push(constant)
 		case chunk.OP_NIL:
-			push(value.NIL_VAL())
+			push(objval.NIL_VAL())
 		case chunk.OP_TRUE:
-			push(value.BOOL_VAL(true))
+			push(objval.BOOL_VAL(true))
 		case chunk.OP_FALSE:
-			push(value.BOOL_VAL(false))
+			push(objval.BOOL_VAL(false))
 		case chunk.OP_EQUAL:
 			a := pop()
 			b := pop()
-			push(value.BOOL_VAL(value.ValuesEqual(a, b)))
+			push(objval.BOOL_VAL(objval.ValuesEqual(a, b)))
 		case chunk.OP_GREATER:
 			result = binary_op(BINARY_OP_GREATER)
 			if result != INTERPRET_OK {
@@ -183,9 +184,9 @@ func run() InterpretResult {
 				return result
 			}
 		case chunk.OP_ADD:
-			if value.IS_STRING(peek(0)) && value.IS_STRING(peek(1)) {
+			if objval.IS_STRING(peek(0)) && objval.IS_STRING(peek(1)) {
 				result = concatenate()
-			} else if value.IS_NUMBER(peek(0)) && value.IS_NUMBER(peek(1)) {
+			} else if objval.IS_NUMBER(peek(0)) && objval.IS_NUMBER(peek(1)) {
 				result = binary_op(BINARY_OP_ADD)
 			} else {
 				runtimeError("Operands must be two numbers or two strings.")
@@ -211,14 +212,14 @@ func run() InterpretResult {
 				return result
 			}
 		case chunk.OP_NOT:
-			push(value.BOOL_VAL(isFalsey(pop())))
+			push(objval.BOOL_VAL(isFalsey(pop())))
 		case chunk.OP_NEGATE:
-			if !value.IS_NUMBER(peek(0)) {
+			if !objval.IS_NUMBER(peek(0)) {
 				runtimeError("Operand must be a number")
 			}
-			push(value.NUMBER_VAL(-value.AS_NUMBER(pop())))
+			push(objval.NUMBER_VAL(-objval.AS_NUMBER(pop())))
 		case chunk.OP_RETURN:
-			value.PrintValue(pop())
+			objval.PrintValue(pop())
 			fmt.Printf("\n")
 			return INTERPRET_OK
 		}

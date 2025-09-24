@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/davidfung/glox/chunk"
-	"github.com/davidfung/glox/value"
+	"github.com/davidfung/glox/objval"
 )
 
 const DEBUG_PRINT_CODE = true
@@ -20,7 +20,7 @@ func DisassembleChunk(chun *chunk.Chunk, name string) {
 func constantInstruction(name string, chun *chunk.Chunk, offset int) int {
 	constant := chun.Code[offset+1]
 	fmt.Printf("%-16s %4d '", name, constant)
-	value.PrintValue(chun.Constants.Values[constant])
+	objval.PrintValue(chun.Constants.Values[constant])
 	fmt.Println()
 	return offset + 2
 }

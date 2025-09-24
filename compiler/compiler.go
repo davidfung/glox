@@ -9,6 +9,7 @@ import (
 	"github.com/davidfung/glox/chunk"
 	"github.com/davidfung/glox/debugger"
 	"github.com/davidfung/glox/object"
+	"github.com/davidfung/glox/objval"
 	"github.com/davidfung/glox/scanner"
 	"github.com/davidfung/glox/value"
 )
@@ -195,13 +196,13 @@ func number() {
 	if err != nil {
 		error(err.Error())
 	}
-	emitConstant(value.NUMBER_VAL(val))
+	emitConstant(objval.NUMBER_VAL(val))
 }
 
 func str() {
 	// Create a string object, wrap it in a Value, and stuff
 	// the value into the constant table.
-	emitConstant(value.OBJ_VAL(object.CopyString(parser.previous.Source, parser.previous.Start+1, parser.previous.Length-2)))
+	emitConstant(objval.OBJ_VAL(object.CopyString(parser.previous.Source, parser.previous.Start+1, parser.previous.Length-2)))
 }
 
 func unary() {
