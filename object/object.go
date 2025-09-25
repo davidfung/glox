@@ -14,7 +14,7 @@ type Obj struct {
 type ObjString string
 
 func CopyString(s *string, start int, length int) Obj {
-	d := (*s)[start : start+length]
+	d := ObjString((*s)[start : start+length])
 	o := Obj{Type_: OBJ_STRING, Val: d}
 	return o
 }

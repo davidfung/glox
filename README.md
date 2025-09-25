@@ -43,17 +43,19 @@ Also there is no way to pass an operator as a function argument in Go.
 
 ## Import Cycle
 
-There is an import cycle between value.go and object.go.  The cycle is broken by moving code from object.go to value.go, including but not limited to:
-
-  - printOjbect(Value)
+There is an import cycle between value.go and object.go.  The cycle is broken by extracting code which depending on both object.go & value.go to a new file objval.go.
 
 ## Struct Inheritance
 
 Like tagged union, we use interface to implement struct inheritance in clox.
 
-## ObjString
+## Value
 
-We do not keep the length field in ObjString.
+A value is a struct with 2 fields representing its type and value.  The value can be a primitive data type, or an object.
+
+## Object
+
+An object is a struct with 2 fields representing its type and its object value.  ObjString is an alias to string in glox.
 
 ## Keywords
 

@@ -55,7 +55,7 @@ func AS_OBJ(v value.Value) object.Obj {
 	return obj
 }
 
-func AS_STRING(v value.Value) string {
+func AS_STRING(v value.Value) object.ObjString {
 	obj, ok := v.Val.(object.Obj)
 	if !ok {
 		panic("Error: AS_STRING() expects an object in a value.Value")
@@ -64,7 +64,7 @@ func AS_STRING(v value.Value) string {
 	if !ok {
 		panic("Error: AS_STRING() expects a string object")
 	}
-	return string(strobj)
+	return strobj
 }
 
 func AS_BOOL(v value.Value) bool {
