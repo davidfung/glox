@@ -297,8 +297,11 @@ func Compile(source *string, chunk *chunk.Chunk) bool {
 
 	initCompiler()
 	advance()
-	expression()
-	consume(scanner.TOKEN_EOF, "Expect end of expression.")
+	if parser.current.Type != scanner.TOKEN_EOF {
+		expression()
+	}
+	// expression()
+	// consume(scanner.TOKEN_EOF, "Expect end of expression.")
 	endCompiler()
 	return !parser.hadError
 }

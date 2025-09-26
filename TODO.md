@@ -1,5 +1,4 @@
 ## NEXT
-- fix "a" + "b"
+- fix crash on multiline source file: slice bounds out of range
 
 ## TODO
-- fix crash on multiline source file: slice bounds out of range
