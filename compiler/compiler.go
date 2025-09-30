@@ -88,7 +88,7 @@ func advance() {
 		if parser.current.Type != scanner.TOKEN_ERROR {
 			break
 		}
-		// TOFIX: not sure why passing the current current token tax to errorAtCurrent
+		// TOFIX: not sure why passing the current text to errorAtCurrent
 		errorAtCurrent((*parser.current.Source)[parser.current.Start : parser.current.Start+parser.current.Length])
 	}
 }
@@ -100,6 +100,18 @@ func consume(typ scanner.TokenType, message string) {
 	}
 
 	errorAtCurrent(message)
+}
+
+func check(typ scanner.TokenType) bool {
+	return parser.current.Type == typ
+}
+
+func match(typ scanner.TokenType) bool {
+	if !check(typ) {
+		return false
+	}
+	advance()
+	return true
 }
 
 func emitByte[B chunk.Byte](byte_ B) {
@@ -186,6 +198,22 @@ func grouping() {
 
 func expression() {
 	parsePrecedence(PREC_ASSIGNMENT)
+}
+
+func printStatement() {
+	expression()
+	consume(scanner.TOKEN_SEMICOLON, "Expect ';' after value.")
+	emitByte(chunk.OP_PRINT)
+}
+
+func declaration() {
+	statement()
+}
+
+func statement() {
+	if match(scanner.TOKEN_PRINT) {
+		printStatement()
+	}
 }
 
 func number() {
@@ -297,11 +325,9 @@ func Compile(source *string, chunk *chunk.Chunk) bool {
 
 	initCompiler()
 	advance()
-	if parser.current.Type != scanner.TOKEN_EOF {
-		expression()
+	for !match(scanner.TOKEN_EOF) {
+		declaration()
 	}
-	// expression()
-	// consume(scanner.TOKEN_EOF, "Expect end of expression.")
 	endCompiler()
 	return !parser.hadError
 }

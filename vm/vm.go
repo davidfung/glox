@@ -218,9 +218,11 @@ func run() InterpretResult {
 				runtimeError("Operand must be a number")
 			}
 			push(objval.NUMBER_VAL(-objval.AS_NUMBER(pop())))
-		case chunk.OP_RETURN:
+		case chunk.OP_PRINT:
 			objval.PrintValue(pop())
-			fmt.Printf("\n")
+			fmt.Println()
+		case chunk.OP_RETURN:
+			// Exit interpreter.
 			return INTERPRET_OK
 		}
 	}
