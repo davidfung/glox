@@ -212,8 +212,41 @@ func printStatement() {
 	emitByte(chunk.OP_PRINT)
 }
 
+func synchronize() {
+	parser.panicMode = false
+
+	for parser.current.Type != scanner.TOKEN_EOF {
+		if parser.previous.Type == scanner.TOKEN_SEMICOLON {
+			return
+		}
+		switch parser.current.Type {
+		case scanner.TOKEN_CLASS:
+			return
+		case scanner.TOKEN_FUN:
+			return
+		case scanner.TOKEN_VAR:
+			return
+		case scanner.TOKEN_FOR:
+			return
+		case scanner.TOKEN_IF:
+			return
+		case scanner.TOKEN_WHILE:
+			return
+		case scanner.TOKEN_PRINT:
+			return
+		case scanner.TOKEN_RETURN:
+			return
+		default:
+		}
+	}
+	advance()
+}
+
 func declaration() {
 	statement()
+	if parser.panicMode {
+		synchronize()
+	}
 }
 
 func statement() {
