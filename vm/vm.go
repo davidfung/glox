@@ -169,6 +169,8 @@ func run() InterpretResult {
 			push(objval.BOOL_VAL(true))
 		case chunk.OP_FALSE:
 			push(objval.BOOL_VAL(false))
+		case chunk.OP_POP:
+			pop()
 		case chunk.OP_EQUAL:
 			a := pop()
 			b := pop()

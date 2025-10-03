@@ -200,6 +200,12 @@ func expression() {
 	parsePrecedence(PREC_ASSIGNMENT)
 }
 
+func expressionStatement() {
+	expression()
+	consume(scanner.TOKEN_SEMICOLON, "Expect ';' after expression.")
+	emitByte(chunk.OP_POP)
+}
+
 func printStatement() {
 	expression()
 	consume(scanner.TOKEN_SEMICOLON, "Expect ';' after value.")
@@ -213,6 +219,8 @@ func declaration() {
 func statement() {
 	if match(scanner.TOKEN_PRINT) {
 		printStatement()
+	} else {
+		expressionStatement()
 	}
 }
 
