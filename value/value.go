@@ -3,7 +3,8 @@ package value
 type ValueType int
 
 const (
-	VAL_BOOL ValueType = iota
+	VAL_UNDEFINED = iota
+	VAL_BOOL
 	VAL_NIL
 	VAL_NUMBER
 	VAL_OBJ
