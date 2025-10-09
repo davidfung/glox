@@ -1,4 +1,5 @@
 ## NEXT
-- Expression Statement 21.12
+- reading variables 21.3
 
 ## TODO
+- modernize hashString() in object.go (using range)

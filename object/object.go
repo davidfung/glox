@@ -13,6 +13,8 @@ type Obj struct {
 
 type ObjString string
 
+// Given a segment of a string, return a object whose value is a string.
+// It can be used to convert a scanner token into a string object.
 func CopyString(s *string, start int, length int) Obj {
 	d := ObjString((*s)[start : start+length])
 	o := Obj{Type_: OBJ_STRING, Val: d}

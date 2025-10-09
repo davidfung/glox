@@ -200,6 +200,20 @@ func expression() {
 	parsePrecedence(PREC_ASSIGNMENT)
 }
 
+// The production of declaration grammar rule.
+func varDeclaration() {
+	global := parseVariable("Expect variable name.")
+
+	if match(scanner.TOKEN_EQUAL) {
+		expression()
+	} else {
+		emitByte(chunk.OP_NIL)
+	}
+	consume(scanner.TOKEN_SEMICOLON, "Expect ';' after variable declaration.")
+
+	defineVariable(global)
+}
+
 func expressionStatement() {
 	expression()
 	consume(scanner.TOKEN_SEMICOLON, "Expect ';' after expression.")
@@ -243,7 +257,11 @@ func synchronize() {
 }
 
 func declaration() {
-	statement()
+	if match(scanner.TOKEN_VAR) {
+		varDeclaration()
+	} else {
+		statement()
+	}
 	if parser.panicMode {
 		synchronize()
 	}
@@ -306,6 +324,20 @@ func parsePrecedence(precedence Precedence) {
 		infixRule := getRule(parser.previous.Type).infix
 		infixRule()
 	}
+}
+
+// The token is the name of the identifier.
+func identifierConstant(token scanner.Token) uint8 {
+	strobj := object.CopyString(token.Source, token.Start, token.Length)
+	return makeConstant(objval.OBJ_VAL(strobj))
+}
+func parseVariable(errorMessage string) uint8 {
+	consume(scanner.TOKEN_IDENTIFIER, errorMessage)
+	return identifierConstant(parser.previous)
+}
+
+func defineVariable(global uint8) {
+	emitBytes(chunk.OP_DEFINE_GLOBAL, global)
 }
 
 func getRule(tokenType scanner.TokenType) ParseRule {

@@ -9,6 +9,7 @@ import (
 	"github.com/davidfung/glox/debugger"
 	"github.com/davidfung/glox/object"
 	"github.com/davidfung/glox/objval"
+	"github.com/davidfung/glox/table"
 	"github.com/davidfung/glox/value"
 )
 
@@ -19,6 +20,7 @@ type VM struct {
 	ip       int
 	stack    [STACK_MAX]value.Value
 	stackTop int
+	globals  table.Table
 }
 
 type InterpretResult int
@@ -58,9 +60,11 @@ func runtimeError(format string, args ...any) {
 
 func InitVM() {
 	resetStack()
+	table.InitTable(&vm.globals)
 }
 
 func FreeVM() {
+	table.FreeTable(&vm.globals)
 }
 
 func push(value value.Value) {
@@ -146,6 +150,10 @@ func run() InterpretResult {
 		return vm.chunk.Constants.Values[readByte()]
 	}
 
+	readString := func() object.ObjString {
+		return objval.AS_STRING(readConstant())
+	}
+
 	for {
 		if debugger.DEBUG_TRACE_EXECUTION {
 			fmt.Printf("         ")
@@ -170,6 +178,10 @@ func run() InterpretResult {
 		case chunk.OP_FALSE:
 			push(objval.BOOL_VAL(false))
 		case chunk.OP_POP:
+			pop()
+		case chunk.OP_DEFINE_GLOBAL:
+			name := readString()
+			table.TableSet(&vm.globals, name, peek(0))
 			pop()
 		case chunk.OP_EQUAL:
 			a := pop()
