@@ -292,6 +292,15 @@ func str() {
 	emitConstant(objval.OBJ_VAL(object.CopyString(parser.previous.Source, parser.previous.Start+1, parser.previous.Length-2)))
 }
 
+func namedVariable(token scanner.Token) {
+	arg := identifierConstant(token)
+	emitBytes(chunk.OP_GET_GLOBAL, arg)
+}
+
+func variable() {
+	namedVariable(parser.previous)
+}
+
 func unary() {
 	operatorType := parser.previous.Type
 
@@ -327,6 +336,7 @@ func parsePrecedence(precedence Precedence) {
 }
 
 // The token is the name of the identifier.
+// Add a value in the constant table and return its index.
 func identifierConstant(token scanner.Token) uint8 {
 	strobj := object.CopyString(token.Source, token.Start, token.Length)
 	return makeConstant(objval.OBJ_VAL(strobj))
@@ -365,7 +375,7 @@ func initCompiler() {
 		scanner.TOKEN_GREATER_EQUAL: {nil, binary, PREC_COMPARISON},
 		scanner.TOKEN_LESS:          {nil, binary, PREC_COMPARISON},
 		scanner.TOKEN_LESS_EQUAL:    {nil, binary, PREC_COMPARISON},
-		scanner.TOKEN_IDENTIFIER:    {nil, nil, PREC_NONE},
+		scanner.TOKEN_IDENTIFIER:    {variable, nil, PREC_NONE},
 		scanner.TOKEN_STRING:        {str, nil, PREC_NONE},
 		scanner.TOKEN_NUMBER:        {number, nil, PREC_NONE},
 		scanner.TOKEN_AND:           {nil, nil, PREC_NONE},

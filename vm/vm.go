@@ -179,6 +179,14 @@ func run() InterpretResult {
 			push(objval.BOOL_VAL(false))
 		case chunk.OP_POP:
 			pop()
+		case chunk.OP_GET_GLOBAL:
+			name := readString()
+			val, err := table.TableGet(&vm.globals, name)
+			if err {
+				runtimeError("Undefined variable '%s'.", name)
+				return INTERPRET_RUNTIME_ERROR
+			}
+			push(val)
 		case chunk.OP_DEFINE_GLOBAL:
 			name := readString()
 			table.TableSet(&vm.globals, name, peek(0))

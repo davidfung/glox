@@ -17,9 +17,10 @@ func FreeTable(table *Table) {
 	InitTable(table)
 }
 
+// Return the value and true if found, otherwise return the zero value of Value and false.
 func TableGet(table *Table, key object.ObjString) (value.Value, bool) {
 	val, found := table.entries[key]
-	return val, found
+	return val, !found
 }
 
 // This function adds the given key/value pair to the given hash table.
