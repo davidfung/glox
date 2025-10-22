@@ -9,24 +9,31 @@ import (
 
 func TestTable(t *testing.T) {
 	var table Table
+	var ok bool
+	var newkey bool
 	val := value.Value{Type_: value.VAL_NUMBER, Val: float64(1)}
 
+	// table: hello
 	InitTable(&table)
-	created := TableSet(&table, "hello", val)
-	if !created {
+	newkey = TableSet(&table, "hello", val)
+	if !newkey {
 		t.Error("map entry not being created")
 	}
 
-	created = TableSet(&table, "hello", val)
-	if created {
+	// table: hello
+	newkey = TableSet(&table, "hello", val)
+	if newkey {
 		t.Error("map entry should not be created")
 	}
 
-	created = TableSet(&table, "world", val)
-	if !created {
+	// table: hello, world
+	newkey = TableSet(&table, "world", val)
+	if !newkey {
 		t.Error("map entry not being created")
 	}
 
+	// table: hello, world
+	// table2: hello, world
 	var table2 Table
 	TableAddAll(&table, &table2)
 	if &table == &table2 {
@@ -36,23 +43,29 @@ func TestTable(t *testing.T) {
 		t.Error("table copy error")
 	}
 
-	val, found := TableGet(&table, "hello")
-	if objval.AS_NUMBER(val) != float64(1) || !found {
+	// table: hello, world
+	// table2: hello, world
+	val, ok = TableGet(&table, "hello")
+	if objval.AS_NUMBER(val) != float64(1) || !ok {
 		t.Error("Table entry retrival error")
 	}
 
-	val, found = TableGet(&table2, "world")
-	if objval.AS_NUMBER(val) != float64(1) || !found {
+	// table: hello, world
+	// table2: hello, world
+	val, ok = TableGet(&table2, "world")
+	if objval.AS_NUMBER(val) != float64(1) || !ok {
 		t.Error("Table entry retrival error")
 	}
 
-	_, found = TableGet(&table2, "not exist")
-	if found {
+	// table: hello, world
+	// table2: hello, world
+	_, ok = TableGet(&table2, "not exist")
+	if ok {
 		t.Error("Table entry retrival error")
 	}
 
-	found = TableDelete(&table2, "hello")
-	if !found || len(table2.entries) != 1 {
+	ok = TableDelete(&table2, "hello")
+	if !ok || len(table2.entries) != 1 {
 		t.Error("table entry deletion error")
 	}
 }

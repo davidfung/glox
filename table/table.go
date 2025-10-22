@@ -17,19 +17,21 @@ func FreeTable(table *Table) {
 	InitTable(table)
 }
 
-// Return the value and true if found, otherwise return the zero value of Value and false.
-func TableGet(table *Table, key object.ObjString) (value.Value, bool) {
-	val, found := table.entries[key]
-	return val, !found
+// Return the value and ok=true if found,
+// otherwise return the zero value of Value and ok=false
+func TableGet(table *Table, key object.ObjString) (val value.Value, ok bool) {
+	val, ok = table.entries[key]
+	return val, ok
 }
 
 // This function adds the given key/value pair to the given hash table.
 // If an entry for that key is already present, the new value overwrites
 // the old value. The function returns true if a new entry was added.
-func TableSet(table *Table, key object.ObjString, val value.Value) bool {
-	_, found := table.entries[key]
+func TableSet(table *Table, key object.ObjString, val value.Value) (newkey bool) {
+	_, ok := table.entries[key]
 	table.entries[key] = val
-	return !found
+	newkey = !ok
+	return
 }
 
 // Delete a map entry.  Return true if an entry is found and deleted.

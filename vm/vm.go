@@ -181,8 +181,8 @@ func run() InterpretResult {
 			pop()
 		case chunk.OP_GET_GLOBAL:
 			name := readString()
-			val, err := table.TableGet(&vm.globals, name)
-			if err {
+			val, ok := table.TableGet(&vm.globals, name)
+			if !ok {
 				runtimeError("Undefined variable '%s'.", name)
 				return INTERPRET_RUNTIME_ERROR
 			}
