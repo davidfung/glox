@@ -6,15 +6,21 @@ import (
 
 func TestScripts(t *testing.T) {
 	InitVM()
-	//	s := `var drink = "coffee";
-	//
-	// var breakfast = "crossiant with " + drink;
-	// print breakfast;`
-	// s := `var drink = "coffee"; print coffee;`
-	 s := `var x = 1; print x;`
-	result := Interpret(&s)
-	if result != INTERPRET_OK {
-		t.Error("Script error")
+
+	var tests = []struct {
+		input string
+		want  InterpretResult
+	}{
+		{`var x = 1; print x;`, INTERPRET_OK},
+		{`var drink = "coffee";
+	      var breakfast = "crossiant with " + drink;
+	      print breakfast;`, INTERPRET_OK},
 	}
+	for _, test := range tests {
+		if result := Interpret(&test.input); result != test.want {
+			t.Errorf("Script error: %q", test.input)
+		}
+	}
+
 	FreeVM()
 }
