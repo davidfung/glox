@@ -5,7 +5,6 @@ import (
 )
 
 func TestScripts(t *testing.T) {
-	InitVM()
 
 	var tests = []struct {
 		input string
@@ -17,10 +16,12 @@ func TestScripts(t *testing.T) {
 	      print breakfast;`, INTERPRET_OK},
 	}
 	for _, test := range tests {
-		if result := Interpret(&test.input); result != test.want {
-			t.Errorf("Script error: %q", test.input)
-		}
+		t.Run(test.input, func(t *testing.T) {
+			InitVM()
+			if result := Interpret(&test.input); result != test.want {
+				t.Errorf("Script error: %q", test.input)
+			}
+			FreeVM()
+		})
 	}
-
-	FreeVM()
 }
