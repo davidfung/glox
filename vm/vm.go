@@ -191,6 +191,14 @@ func run() InterpretResult {
 			name := readString()
 			table.TableSet(&vm.globals, name, peek(0))
 			pop()
+		case chunk.OP_SET_GLOBAL:
+			name := readString()
+			if table.TableSet(&vm.globals, name, peek(0)) {
+				// Lox doesn't support implicit variable declaration
+				table.TableDelete(&vm.globals, name)
+				runtimeError("Undefined variable '%s'.", name)
+				return INTERPRET_RUNTIME_ERROR
+			}
 		case chunk.OP_EQUAL:
 			a := pop()
 			b := pop()

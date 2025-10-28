@@ -37,7 +37,7 @@ const (
 	PREC_PRIMARY
 )
 
-type ParseFn func()
+type ParseFn func(canAssign bool)
 
 type ParseRule struct {
 	prefix     ParseFn
@@ -65,7 +65,7 @@ func errorAt(token scanner.Token, message string) {
 	} else if token.Type == scanner.TOKEN_ERROR {
 		// Nothing.
 	} else {
-		fmt.Fprintf(os.Stderr, " at '%s'", (*token.Source)[token.Start:token.Length])
+		fmt.Fprintf(os.Stderr, " at '%s'", (*token.Source)[token.Start:token.Start+token.Length])
 	}
 
 	fmt.Fprintf(os.Stderr, ": %s\n", message)
@@ -149,7 +149,7 @@ func endCompiler() {
 	}
 }
 
-func binary() {
+func binary(canAssign bool) {
 	operatorType := parser.previous.Type
 	rule := getRule(operatorType)
 	parsePrecedence(rule.precedence + 1)
@@ -180,7 +180,7 @@ func binary() {
 	}
 }
 
-func literal() {
+func literal(canAssign bool) {
 	switch parser.previous.Type {
 	case scanner.TOKEN_FALSE:
 		emitByte(chunk.OP_FALSE)
@@ -191,7 +191,7 @@ func literal() {
 	}
 }
 
-func grouping() {
+func grouping(canAssign bool) {
 	expression()
 	consume(scanner.TOKEN_RIGHT_PAREN, "Expect ')' after expression.")
 }
@@ -252,8 +252,8 @@ func synchronize() {
 			return
 		default:
 		}
+		advance()
 	}
-	advance()
 }
 
 func declaration() {
@@ -275,7 +275,7 @@ func statement() {
 	}
 }
 
-func number() {
+func number(canAssign bool) {
 	beg := parser.previous.Start
 	end := parser.previous.Start + parser.previous.Length
 	s := (*parser.previous.Source)[beg:end]
@@ -286,22 +286,28 @@ func number() {
 	emitConstant(objval.NUMBER_VAL(val))
 }
 
-func str() {
+func str(canAssign bool) {
 	// Create a string object, wrap it in a Value, and stuff
 	// the value into the constant table.
 	emitConstant(objval.OBJ_VAL(object.CopyString(parser.previous.Source, parser.previous.Start+1, parser.previous.Length-2)))
 }
 
-func namedVariable(token scanner.Token) {
+func namedVariable(token scanner.Token, canAssign bool) {
 	arg := identifierConstant(token)
-	emitBytes(chunk.OP_GET_GLOBAL, arg)
+
+	if canAssign && match(scanner.TOKEN_EQUAL) {
+		expression()
+		emitBytes(chunk.OP_SET_GLOBAL, arg)
+	} else {
+		emitBytes(chunk.OP_GET_GLOBAL, arg)
+	}
 }
 
-func variable() {
-	namedVariable(parser.previous)
+func variable(canAssign bool) {
+	namedVariable(parser.previous, canAssign)
 }
 
-func unary() {
+func unary(canAssign bool) {
 	operatorType := parser.previous.Type
 
 	// Compile the operand.
@@ -326,12 +332,19 @@ func parsePrecedence(precedence Precedence) {
 		return
 	}
 
-	prefixRule()
+	canAssign := precedence <= PREC_ASSIGNMENT
+	prefixRule(canAssign)
 
 	for precedence <= getRule(parser.current.Type).precedence {
 		advance()
 		infixRule := getRule(parser.previous.Type).infix
-		infixRule()
+		infixRule(canAssign)
+	}
+
+	// If assignment is allowed, and the equal sign still exists at this point,
+	// it is an error because the equal sign should be already consumed.
+	if canAssign && match(scanner.TOKEN_EQUAL) {
+		error("Invalid assignment target.")
 	}
 }
 

@@ -74,4 +74,12 @@ Some words are keywords in Go but not in C.  So have to be named differently:
   - compiler.go
     - string() -> str()
 
+## String Interning
+
+Since glox use Go built-in map datatype to implement the table api, there is no need to implement string interning because the map datatype already take care of it.
+
+## Constants Pool
+
+If we add the same values twice in the constant pool, it will occupies two slots in the constant pool.  That is duplication exists.  Do we want to de-duplicate it?
+
 ## End

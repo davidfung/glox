@@ -1,6 +1,5 @@
 ## NEXT
-[ ] will no interning leading to redundent global table entries?
-[x] use testing.Run() - check cross test leakage
+[ ] 21.4 assignment
 
 ## TODO
 [ ] modernize hashString() in object.go (using range)
