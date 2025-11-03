@@ -14,6 +14,10 @@ Glox is an implementation of the lox compiler in Go, and is based on the clox co
   - Go use Uppercase for export symbols.
   - Although no need to implement the hash map mechanics in the Go implementation, still have to implement the hashmap access api.
   - String interning: we do not implement string interning in the Go implementation.
+  - Some words are keywords in Go but not in C.  So have to be named differently:
+    - type -> type_
+    - string() -> str() // compiler.go
+  - glox does not have common.h, so need to scatter the definitions defined in common.h elsewhere.
 
 ## Implementation
 
@@ -64,15 +68,6 @@ Difference from clox: VAL_UNDEFINED ValueType is added in glox, so that the zero
 ## Object
 
 An object is a struct with 2 fields representing its type and its object value.  ObjString is an alias to string in glox.
-
-## Keywords
-
-Some words are keywords in Go but not in C.  So have to be named differently:
-
-  - type -> type_
-
-  - compiler.go
-    - string() -> str()
 
 ## String Interning
 

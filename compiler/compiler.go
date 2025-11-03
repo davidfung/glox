@@ -14,6 +14,9 @@ import (
 	"github.com/davidfung/glox/value"
 )
 
+const UINT8_MAX = 255
+const UINT8_COUNT = (UINT8_MAX + 1)
+
 type Parser struct {
 	current   scanner.Token
 	previous  scanner.Token
@@ -45,7 +48,26 @@ type ParseRule struct {
 	precedence Precedence
 }
 
+type Local struct {
+	name  scanner.Token
+	depth int
+}
+
+// We have a simple, flat array of all locals that are in scope
+// during each point in the compilation process.  They are ordered
+// in the array in the order that their declarations appear in the
+// code. Since the instruction operand we’ll use to encode a
+// local is a single byte, our VM has a hard limit on the number
+// of locals that can be in scope at once. That means we can also
+// give the locals array a fixed size.
+type Compiler struct {
+	locals     [UINT8_COUNT]Local
+	localCount int
+	scopeDepth int
+}
+
 var parser Parser
+var current *Compiler
 var compilingChunk *chunk.Chunk
 var rules []ParseRule
 
@@ -102,10 +124,12 @@ func consume(typ scanner.TokenType, message string) {
 	errorAtCurrent(message)
 }
 
+// check next token
 func check(typ scanner.TokenType) bool {
 	return parser.current.Type == typ
 }
 
+// check next token, advance if match
 func match(typ scanner.TokenType) bool {
 	if !check(typ) {
 		return false
@@ -140,6 +164,12 @@ func emitConstant(value value.Value) {
 	emitBytes(chunk.OP_CONSTANT, makeConstant(value))
 }
 
+func initCompiler(compiler *Compiler) {
+	compiler.localCount = 0
+	compiler.scopeDepth = 0
+	current = compiler
+}
+
 func endCompiler() {
 	emitReturn()
 	if debugger.DEBUG_PRINT_CODE {
@@ -147,6 +177,14 @@ func endCompiler() {
 			debugger.DisassembleChunk(currentChunk(), "code")
 		}
 	}
+}
+
+func beginScope() {
+	current.scopeDepth++
+}
+
+func endScope() {
+	current.scopeDepth--
 }
 
 func binary(canAssign bool) {
@@ -198,6 +236,13 @@ func grouping(canAssign bool) {
 
 func expression() {
 	parsePrecedence(PREC_ASSIGNMENT)
+}
+
+func block() {
+	for !check(scanner.TOKEN_RIGHT_BRACE) && !check(scanner.TOKEN_EOF) {
+		declaration()
+	}
+	consume(scanner.TOKEN_RIGHT_BRACE, "Expect '}' after block.")
 }
 
 // The production of declaration grammar rule.
@@ -270,6 +315,10 @@ func declaration() {
 func statement() {
 	if match(scanner.TOKEN_PRINT) {
 		printStatement()
+	} else if match(scanner.TOKEN_LEFT_BRACE) {
+		beginScope()
+		block()
+		endScope()
 	} else {
 		expressionStatement()
 	}
@@ -367,7 +416,7 @@ func getRule(tokenType scanner.TokenType) ParseRule {
 	return rules[tokenType]
 }
 
-func initCompiler() {
+func initParseRules() {
 	rules = []ParseRule{
 		scanner.TOKEN_LEFT_PAREN:    {grouping, nil, PREC_NONE},
 		scanner.TOKEN_RIGHT_PAREN:   {nil, nil, PREC_NONE},
@@ -414,12 +463,14 @@ func initCompiler() {
 
 func Compile(source *string, chunk *chunk.Chunk) bool {
 	scanner.InitScanner(source)
+	var compiler Compiler
+	initCompiler(&compiler)
 	compilingChunk = chunk
 
 	parser.hadError = false
 	parser.panicMode = false
 
-	initCompiler()
+	initParseRules()
 	advance()
 	for !match(scanner.TOKEN_EOF) {
 		declaration()
