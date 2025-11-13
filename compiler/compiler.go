@@ -185,6 +185,16 @@ func beginScope() {
 
 func endScope() {
 	current.scopeDepth--
+
+	// When a block ends, we discard any variables declared
+	// at the scope depth we just left by simply decrementing
+	// the length of the array, and emit an OP_POP instruction
+	// to pop them from the stack.
+	for current.localCount > 0 &&
+		current.locals[current.localCount-1].depth > current.scopeDepth {
+		emitByte(chunk.OP_POP)
+		current.localCount--
+	}
 }
 
 func binary(canAssign bool) {
@@ -403,12 +413,88 @@ func identifierConstant(token scanner.Token) uint8 {
 	strobj := object.CopyString(token.Source, token.Start, token.Length)
 	return makeConstant(objval.OBJ_VAL(strobj))
 }
+
+func identifierEqual(a *scanner.Token, b *scanner.Token) bool {
+	if a.Length != b.Length {
+		return false
+	}
+	return (*a.Source)[a.Start:a.Start+a.Length] == (*b.Source)[b.Start:b.Start+b.Length]
+}
+
+// Initializes the next available Local in the compiler's array
+// of variables.  It stores the variable's name and the depth
+// of the scope that owns the variable.
+func addLocal(name scanner.Token) {
+	if current.localCount == UINT8_COUNT {
+		error("Too may local variables in function.")
+		return
+	}
+
+	local := &current.locals[current.localCount]
+	current.localCount++
+	local.name = name
+	local.depth = current.scopeDepth
+}
+
+func declareVariable() {
+	if current.scopeDepth > 0 {
+		return
+	}
+
+	name := &parser.previous
+
+	// Local variables are appended to the array when they’re
+	// declared, which means the current scope is always at
+	// the end of the array. When we declare a new variable,
+	// we start at the end and work backward, looking for an
+	// existing variable with the same name. If we find one in
+	// the current scope, we report the error. Otherwise, if
+	// we reach the beginning of the array or a variable owned
+	// by another scope, then we know we’ve checked all of the
+	// existing variables in the scope.
+	for i := current.localCount - 1; i >= 0; i-- {
+		local := current.locals[i]
+		if local.depth != -1 && local.depth < current.scopeDepth {
+			break
+		}
+		if identifierEqual(name, &local.name) {
+			error("Already a variable with this name in this scope.")
+		}
+	}
+
+	addLocal(*name)
+}
+
 func parseVariable(errorMessage string) uint8 {
 	consume(scanner.TOKEN_IDENTIFIER, errorMessage)
+
+	declareVariable()
+	// Exit function if we're in a local scope.  At runtime,
+	// locals aren't looked up by name.  There's no need to
+	// stuff the variable's name into the constant table, so
+	// if the declaration is inside a local scope, we return
+	// a dummy table index instead.
+	if current.scopeDepth > 0 {
+		return 0
+	}
+
 	return identifierConstant(parser.previous)
 }
 
 func defineVariable(global uint8) {
+	// There is no code to create a local variable at runtime.
+	// Think about what state the VM is in. It has already
+	// executed the code for the variable’s initializer (or
+	// the implicit nil if the user omitted an initializer),
+	// and that value is sitting right on top of the stack as
+	// the only remaining temporary. We also know that new
+	// locals are allocated at the top of the stack ... right
+	// where that value already is. Thus, there’s nothing to
+	// do. The temporary simply becomes the local variable.
+	// It doesn’t get much more efficient than that.
+	if current.scopeDepth > 0 {
+		return
+	}
 	emitBytes(chunk.OP_DEFINE_GLOBAL, global)
 }
 

@@ -1,5 +1,5 @@
 ## NEXT
-[ ] 21.4 assignment
+[ ] 22.4 Using Locals
 
 ## TODO
 [ ] modernize hashString() in object.go (using range)
