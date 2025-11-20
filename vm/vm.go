@@ -179,6 +179,23 @@ func run() InterpretResult {
 			push(objval.BOOL_VAL(false))
 		case chunk.OP_POP:
 			pop()
+		case chunk.OP_GET_LOCAL:
+			// Load the value from the local index and then
+			// push it on top of the stack where later
+			// instructions can find it.
+			slot := readByte()
+			push(vm.stack[slot])
+		case chunk.OP_SET_LOCAL:
+			// Take the assigned value from the top of the
+			// stack and stores it in the stack slot corresponding
+			// to the local variable.  Note that it does not
+			// pop the value from the stack because assignment is 
+			// an expression, and every expression produces a value.
+			// The value of an assignment expression is the assigned
+			// value itself, so the VM just leaves the value on the
+			// stack.
+			slot := readByte()
+			vm.stack[slot] = peek(0)
 		case chunk.OP_GET_GLOBAL:
 			name := readString()
 			val, ok := table.TableGet(&vm.globals, name)

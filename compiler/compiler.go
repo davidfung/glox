@@ -352,13 +352,23 @@ func str(canAssign bool) {
 }
 
 func namedVariable(token scanner.Token, canAssign bool) {
-	arg := identifierConstant(token)
+	// arg := identifierConstant(token)
+	var getOp, setOp chunk.OpCode
+	var arg int = resolveLocal(current, &token)
+	if arg != (-1) {
+		getOp = chunk.OP_GET_LOCAL
+		setOp = chunk.OP_SET_LOCAL
+	} else {
+		arg = int(identifierConstant(token))
+		getOp = chunk.OP_GET_GLOBAL
+		setOp = chunk.OP_SET_GLOBAL
+	}
 
 	if canAssign && match(scanner.TOKEN_EQUAL) {
 		expression()
-		emitBytes(chunk.OP_SET_GLOBAL, arg)
+		emitBytes(setOp, uint8(arg))
 	} else {
-		emitBytes(chunk.OP_GET_GLOBAL, arg)
+		emitBytes(getOp, uint8(arg))
 	}
 }
 
@@ -421,6 +431,39 @@ func identifierEqual(a *scanner.Token, b *scanner.Token) bool {
 	return (*a.Source)[a.Start:a.Start+a.Length] == (*b.Source)[b.Start:b.Start+b.Length]
 }
 
+// We walk the list of locals that are currently in scope. If one
+// has the same name as the identifier token, the identifier must
+// refer to that variable. We’ve found it! We walk the array backward
+// so that we find the last declared variable with the identifier.
+// That ensures that inner local variables correctly shadow locals
+// with the same name in surrounding scopes.
+//
+// At runtime, we load and store locals using the stack slot index,
+// so that’s what the compiler needs to calculate after it resolves
+// the variable. Whenever a variable is declared, we append it to
+// the locals array in Compiler. That means the first local variable
+// is at index zero, the next one is at index one, and so on. In
+// other words, the locals array in the compiler has the exact same
+// layout as the VM’s stack will have at runtime. The variable’s index
+// in the locals array is the same as its stack slot. How convenient!
+//
+// If we make it through the whole array without finding a variable
+// with the given name, it must not be a local. In that case, we
+// return -1 to signal that it wasn’t found and should be assumed to
+// be a global variable instead.
+func resolveLocal(compiler *Compiler, name *scanner.Token) int {
+	for i := compiler.localCount - 1; i >= 0; i-- {
+		local := &compiler.locals[i]
+		if identifierEqual(name, &local.name) {
+			if local.depth == (-1) {
+				error("Can't read local variable in its own initializer.")
+			}
+			return i
+		}
+	}
+	return -1
+}
+
 // Initializes the next available Local in the compiler's array
 // of variables.  It stores the variable's name and the depth
 // of the scope that owns the variable.
@@ -481,6 +524,10 @@ func parseVariable(errorMessage string) uint8 {
 	return identifierConstant(parser.previous)
 }
 
+func markInitialized() {
+	current.locals[current.localCount-1].depth = current.scopeDepth
+}
+
 func defineVariable(global uint8) {
 	// There is no code to create a local variable at runtime.
 	// Think about what state the VM is in. It has already
@@ -493,6 +540,7 @@ func defineVariable(global uint8) {
 	// do. The temporary simply becomes the local variable.
 	// It doesn’t get much more efficient than that.
 	if current.scopeDepth > 0 {
+		markInitialized()
 		return
 	}
 	emitBytes(chunk.OP_DEFINE_GLOBAL, global)
