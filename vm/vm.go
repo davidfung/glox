@@ -150,6 +150,12 @@ func run() InterpretResult {
 		return vm.chunk.Constants.Values[readByte()]
 	}
 
+	readShort := func() uint16 {
+		vm.ip += 2
+		var x uint16 = (uint16(vm.chunk.Code[vm.ip-2]) << 8) | uint16((vm.chunk.Code[vm.ip-1]))
+		return x
+	}
+
 	readString := func() object.ObjString {
 		return objval.AS_STRING(readConstant())
 	}
@@ -189,7 +195,7 @@ func run() InterpretResult {
 			// Take the assigned value from the top of the
 			// stack and stores it in the stack slot corresponding
 			// to the local variable.  Note that it does not
-			// pop the value from the stack because assignment is 
+			// pop the value from the stack because assignment is
 			// an expression, and every expression produces a value.
 			// The value of an assignment expression is the assigned
 			// value itself, so the VM just leaves the value on the
@@ -268,6 +274,11 @@ func run() InterpretResult {
 		case chunk.OP_PRINT:
 			objval.PrintValue(pop())
 			fmt.Println()
+		case chunk.OP_JUMP_IF_FALSE:
+			offset := readShort()
+			if isFalsey(peek(0)) {
+				vm.ip += int(offset)
+			}
 		case chunk.OP_RETURN:
 			// Exit interpreter.
 			return INTERPRET_OK

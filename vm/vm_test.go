@@ -16,6 +16,8 @@ func TestScripts(t *testing.T) {
 	      print breakfast;`, INTERPRET_OK},
 		{`var a = 1; var b = 2; var c = 3; var d = 4; 
 		  print a * b = c + d;`, INTERPRET_COMPILE_ERROR},
+		{`var a = a`, INTERPRET_COMPILE_ERROR},
+		{`print (1==2);`, INTERPRET_OK},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

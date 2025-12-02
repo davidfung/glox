@@ -15,6 +15,7 @@ import (
 )
 
 const UINT8_MAX = 255
+const UINT16_MAX = 65536
 const UINT8_COUNT = (UINT8_MAX + 1)
 
 type Parser struct {
@@ -147,6 +148,13 @@ func emitBytes[B1 chunk.Byte, B2 chunk.Byte](byte1 B1, byte2 B2) {
 	emitByte(byte2)
 }
 
+func emitJump[B chunk.Byte](byte_ B) int {
+	emitByte(byte_)
+	emitByte(B(0xFF))
+	emitByte(B(0xFF))
+	return len(currentChunk().Code) - 2
+}
+
 func emitReturn() {
 	emitByte(chunk.OP_RETURN)
 }
@@ -162,6 +170,18 @@ func makeConstant(value value.Value) uint8 {
 
 func emitConstant(value value.Value) {
 	emitBytes(chunk.OP_CONSTANT, makeConstant(value))
+}
+
+func patchJump(offset int) {
+	// -2 to adjust for the bytecode for the jump offset itself.
+	jump := len(currentChunk().Code) - offset - 2
+
+	if jump > UINT16_MAX {
+		error("Too much code to jump over.")
+	}
+
+	currentChunk().Code[offset] = uint8((jump >> 8) & 0xff)
+	currentChunk().Code[offset+1] = uint8(jump & 0xff)
 }
 
 func initCompiler(compiler *Compiler) {
@@ -248,6 +268,16 @@ func expression() {
 	parsePrecedence(PREC_ASSIGNMENT)
 }
 
+func ifStatement() {
+	consume(scanner.TOKEN_LEFT_PAREN, "Expect '(' after 'if'.")
+	expression()
+	consume(scanner.TOKEN_RIGHT_PAREN, "Expect ')' after condition.")
+
+	thenJump := emitJump(chunk.OP_JUMP_IF_FALSE)
+	statement()
+	patchJump(thenJump)
+}
+
 func block() {
 	for !check(scanner.TOKEN_RIGHT_BRACE) && !check(scanner.TOKEN_EOF) {
 		declaration()
@@ -325,6 +355,8 @@ func declaration() {
 func statement() {
 	if match(scanner.TOKEN_PRINT) {
 		printStatement()
+	} else if match(scanner.TOKEN_IF) {
+		ifStatement()
 	} else if match(scanner.TOKEN_LEFT_BRACE) {
 		beginScope()
 		block()
