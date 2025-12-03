@@ -75,6 +75,10 @@ func DisassembleInstruction(chun *chunk.Chunk, offset int) int {
 		return simpleInstruction("OP_NEGATE", offset)
 	case chunk.OP_PRINT:
 		return simpleInstruction("OP_PRINT", offset)
+	case chunk.OP_JUMP:
+		return jumpInstruction("OP_JUMP", 1, chun, offset)
+	case chunk.OP_JUMP_IF_FALSE:
+		return jumpInstruction("OP_JUMP_IF_FALSE", 1, chun, offset)
 	case chunk.OP_RETURN:
 		return simpleInstruction("OP_RETURN", offset)
 	default:
@@ -92,4 +96,11 @@ func byteInstruction(name string, chun *chunk.Chunk, offset int) int {
 	slot := chun.Code[offset+1]
 	fmt.Printf("%s-16s %4d\n", name, slot)
 	return offset + 2
+}
+
+func jumpInstruction(name string, sign int, chun *chunk.Chunk, offset int) int {
+	var jump uint16 = uint16(chun.Code[offset+1]) << 8
+	jump |= uint16(chun.Code[offset+2])
+	fmt.Printf("%-16s %4d -> %d\n", name, offset, offset+3+sign*int(jump))
+	return offset + 3
 }
