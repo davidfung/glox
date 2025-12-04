@@ -274,8 +274,18 @@ func ifStatement() {
 	consume(scanner.TOKEN_RIGHT_PAREN, "Expect ')' after condition.")
 
 	thenJump := emitJump(chunk.OP_JUMP_IF_FALSE)
+	emitByte(chunk.OP_POP)
 	statement()
+
+	elseJump := emitJump(chunk.OP_JUMP)
+
 	patchJump(thenJump)
+	emitByte(chunk.OP_POP)
+
+	if match(scanner.TOKEN_ELSE) {
+		statement()
+	}
+	patchJump(elseJump)
 }
 
 func block() {

@@ -274,6 +274,9 @@ func run() InterpretResult {
 		case chunk.OP_PRINT:
 			objval.PrintValue(pop())
 			fmt.Println()
+		case chunk.OP_JUMP:
+			offset := readShort()
+			vm.ip += int(offset)
 		case chunk.OP_JUMP_IF_FALSE:
 			offset := readShort()
 			if isFalsey(peek(0)) {

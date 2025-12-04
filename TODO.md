@@ -1,6 +1,5 @@
 ## NEXT
-[ ] 23.1 If Statements
-[ ] look for unknown opcode 20
+[ ] 23.1.1 Else clause
 
 ## TODO
 [ ] modernize hashString() in object.go (using range)
