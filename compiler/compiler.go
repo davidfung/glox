@@ -387,6 +387,17 @@ func number(canAssign bool) {
 	emitConstant(objval.NUMBER_VAL(val))
 }
 
+func or_(canAssign bool) {
+	elseJump := emitJump(chunk.OP_JUMP_IF_FALSE)
+	endJump := emitJump(chunk.OP_JUMP)
+
+	patchJump(elseJump) // this jump is solely for the POP
+	emitByte(chunk.OP_POP)
+
+	parsePrecedence(PREC_OR)
+	patchJump(endJump) // this jump is to go to the right operand expression
+}
+
 func str(canAssign bool) {
 	// Create a string object, wrap it in a Value, and stuff
 	// the value into the constant table.
@@ -588,6 +599,23 @@ func defineVariable(global uint8) {
 	emitBytes(chunk.OP_DEFINE_GLOBAL, global)
 }
 
+// At the point this is called, the left-hand side expression
+// has already been compiled. That means at runtime, its value
+// will be on top of the stack. If that value is falsey, then
+// we know the entire and must be false, so we skip the right
+// operand and leave the left-hand side value as the result
+// of the entire expression. Otherwise, we discard the
+// left-hand value and evaluate the right operand which
+// becomes the result of the whole and expression.
+func and_(canAssign bool) {
+	endJump := emitJump(chunk.OP_JUMP_IF_FALSE)
+
+	emitByte(chunk.OP_POP)
+	parsePrecedence(PREC_AND)
+
+	patchJump(endJump)
+}
+
 func getRule(tokenType scanner.TokenType) ParseRule {
 	return rules[tokenType]
 }
@@ -616,7 +644,7 @@ func initParseRules() {
 		scanner.TOKEN_IDENTIFIER:    {variable, nil, PREC_NONE},
 		scanner.TOKEN_STRING:        {str, nil, PREC_NONE},
 		scanner.TOKEN_NUMBER:        {number, nil, PREC_NONE},
-		scanner.TOKEN_AND:           {nil, nil, PREC_NONE},
+		scanner.TOKEN_AND:           {nil, and_, PREC_AND},
 		scanner.TOKEN_CLASS:         {nil, nil, PREC_NONE},
 		scanner.TOKEN_ELSE:          {nil, nil, PREC_NONE},
 		scanner.TOKEN_FALSE:         {literal, nil, PREC_NONE},
@@ -624,7 +652,7 @@ func initParseRules() {
 		scanner.TOKEN_FUN:           {nil, nil, PREC_NONE},
 		scanner.TOKEN_IF:            {nil, nil, PREC_NONE},
 		scanner.TOKEN_NIL:           {literal, nil, PREC_NONE},
-		scanner.TOKEN_OR:            {nil, nil, PREC_NONE},
+		scanner.TOKEN_OR:            {nil, or_, PREC_OR},
 		scanner.TOKEN_PRINT:         {nil, nil, PREC_NONE},
 		scanner.TOKEN_RETURN:        {nil, nil, PREC_NONE},
 		scanner.TOKEN_SUPER:         {nil, nil, PREC_NONE},

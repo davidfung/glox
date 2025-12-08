@@ -18,6 +18,16 @@ func TestScripts(t *testing.T) {
 		  print a * b = c + d;`, INTERPRET_COMPILE_ERROR},
 		{`var a = a`, INTERPRET_COMPILE_ERROR},
 		{`print (1==2);`, INTERPRET_OK},
+		{`
+		if (1 == 2) {
+            print "IF BLOCK";
+		} else {
+            print "ELSE BLOCK";
+		}
+		print "CONTINUE BLOCK";
+		`, INTERPRET_OK},
+		{`if (true and false) {} else {}`, INTERPRET_OK},
+		{`if (true or false) {} else {}`, INTERPRET_OK},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
