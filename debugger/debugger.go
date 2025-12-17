@@ -8,7 +8,7 @@ import (
 )
 
 const DEBUG_PRINT_CODE = true
-const DEBUG_TRACE_EXECUTION = true
+const DEBUG_TRACE_EXECUTION = false
 
 func DisassembleChunk(chun *chunk.Chunk, name string) {
 	fmt.Printf("== %s ==\n", name)
@@ -79,6 +79,8 @@ func DisassembleInstruction(chun *chunk.Chunk, offset int) int {
 		return jumpInstruction("OP_JUMP", 1, chun, offset)
 	case chunk.OP_JUMP_IF_FALSE:
 		return jumpInstruction("OP_JUMP_IF_FALSE", 1, chun, offset)
+	case chunk.OP_LOOP:
+		return jumpInstruction("OP_LOOP", -1, chun, offset)
 	case chunk.OP_RETURN:
 		return simpleInstruction("OP_RETURN", offset)
 	default:
@@ -94,7 +96,7 @@ func simpleInstruction(name string, offset int) int {
 
 func byteInstruction(name string, chun *chunk.Chunk, offset int) int {
 	slot := chun.Code[offset+1]
-	fmt.Printf("%s-16s %4d\n", name, slot)
+	fmt.Printf("%-16s %4d\n", name, slot)
 	return offset + 2
 }
 

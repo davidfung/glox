@@ -1,5 +1,5 @@
 ## NEXT
-[ ] 23.1.1 Else clause
+[ ] Chapter 23 Calls and Functions
 
 ## TODO
 [ ] modernize hashString() in object.go (using range)

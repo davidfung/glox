@@ -282,6 +282,9 @@ func run() InterpretResult {
 			if isFalsey(peek(0)) {
 				vm.ip += int(offset)
 			}
+		case chunk.OP_LOOP:
+			offset := readShort()
+			vm.ip -= int(offset)
 		case chunk.OP_RETURN:
 			// Exit interpreter.
 			return INTERPRET_OK

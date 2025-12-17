@@ -28,6 +28,11 @@ func TestScripts(t *testing.T) {
 		`, INTERPRET_OK},
 		{`if (true and false) {} else {}`, INTERPRET_OK},
 		{`if (true or false) {} else {}`, INTERPRET_OK},
+		{`
+        for (var i=1;i<=3;i=i+1) {
+        	print i;
+		}
+		`, INTERPRET_OK},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

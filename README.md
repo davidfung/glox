@@ -2,6 +2,11 @@
 
 Glox is an implementation of the lox compiler in Go, and is based on the clox compiler written in C (clox).  Lox is the creation of Robert Nystrom (craftinginterpreters.com).
 
+Many comments in the code are taken directly from the book Crafting Interpreters.
+
+## Lox Grammar
+  - https://craftinginterpreters.com/appendix-i.html
+
 ## Major differences from clox
   - Go has a gc, hence all memory related stuffs are gone.
   - Go has no pointer arithmetic, hence need to use index.
@@ -86,6 +91,12 @@ The locals array in the compiler struct has the exact same layout  as the VM's s
 ## Testing
 
 Since Lox does not have error handling construct, most of the testings are just running valid Lox scripts (vm_test.go) to see if they crash without checking their output.
+
+## Debugging
+
+The following is the most common bugs:
+  - missing statement
+  - incorrect equality test
 
 ## Future Improvement
 

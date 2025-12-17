@@ -76,6 +76,12 @@ func currentChunk() *chunk.Chunk {
 	return compilingChunk
 }
 
+// This function is a convenient function in glox, and is not in
+// the original clox.
+func currentIP() int {
+	return len(currentChunk().Code)
+}
+
 func errorAt(token scanner.Token, message string) {
 	if parser.panicMode {
 		return
@@ -148,6 +154,18 @@ func emitBytes[B1 chunk.Byte, B2 chunk.Byte](byte1 B1, byte2 B2) {
 	emitByte(byte2)
 }
 
+func emitLoop(loopStart int) {
+	emitByte(chunk.OP_LOOP)
+
+	offset := len(currentChunk().Code) - loopStart + 2
+	if offset > UINT16_MAX {
+		error("Loop body too large.")
+	}
+
+	emitByte(uint8((offset >> 8) & 0xff))
+	emitByte(uint8(offset & 0xff))
+}
+
 func emitJump[B chunk.Byte](byte_ B) int {
 	emitByte(byte_)
 	emitByte(B(0xFF))
@@ -172,6 +190,11 @@ func emitConstant(value value.Value) {
 	emitBytes(chunk.OP_CONSTANT, makeConstant(value))
 }
 
+// This goes back into the bytecode and replaces the operand
+// at the given location with the calculated jump offset.
+// We call patchJump() right before we emit the next instruction
+// that we want the jump to land on, so it uses the current
+// bytecode count to determine how far to jump.
 func patchJump(offset int) {
 	// -2 to adjust for the bytecode for the jump offset itself.
 	jump := len(currentChunk().Code) - offset - 2
@@ -315,10 +338,95 @@ func expressionStatement() {
 	emitByte(chunk.OP_POP)
 }
 
+// As with implementing for loops in jlox/clox, we didn’t need to touch
+// the runtime. It all gets compiled down to primitive control flow
+// operations the VM already supports.
+func forStatement() {
+	beginScope()
+	consume(scanner.TOKEN_LEFT_PAREN, "Expect '(' after 'for'.")
+
+	// Initializer clause
+	if match(scanner.TOKEN_SEMICOLON) {
+		// No initializer
+	} else if match(scanner.TOKEN_VAR) {
+		varDeclaration()
+	} else {
+		// We call expressionStatement() instead of expression().
+		// That looks for a semicolon, which we need here too, and
+		// also emits an OP_POP instruction to discard the value.
+		// We don’t want the initializer to leave anything on the
+		// stack.
+		expressionStatement()
+	}
+
+	loopStart := currentIP()
+
+	// Condition clause
+	exitJump := -1
+	if !match(scanner.TOKEN_SEMICOLON) {
+		expression()
+		consume(scanner.TOKEN_SEMICOLON, "Expect ';' after loop condition.")
+
+		// Jump out of the loop if the condition is false
+		exitJump = emitJump(chunk.OP_JUMP_IF_FALSE)
+		emitByte(chunk.OP_POP)
+	}
+
+	// Increment clause
+	//
+	// The last part is a little tricky. First, we emit a loop instruction.
+	// This is the main loop that takes us back to the top of the for
+	// loop—right before the condition expression if there is one. That
+	// loop happens right after the increment, since the increment executes
+	// at the end of each loop iteration.
+	//
+	// Then we change loopStart to point to the offset where the increment
+	// expression begins. Later, when we emit the loop instruction after the
+	// body statement, this will cause it to jump up to the increment expression
+	// instead of the top of the loop like it does when there is no increment.
+	// This is how we weave the increment in to run after the body.
+	if !match(scanner.TOKEN_RIGHT_PAREN) {
+		bodyJump := emitJump(chunk.OP_JUMP)
+		incrementStart := currentIP()
+		expression()
+		emitByte(chunk.OP_POP)
+		consume(scanner.TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.")
+
+		emitLoop(loopStart)
+		loopStart = incrementStart
+		patchJump(bodyJump)
+	}
+
+	statement()
+	emitLoop(loopStart)
+
+	if exitJump != (-1) {
+		patchJump(exitJump)
+		emitByte(chunk.OP_POP) // pop the condition
+	}
+
+	endScope()
+}
+
 func printStatement() {
 	expression()
 	consume(scanner.TOKEN_SEMICOLON, "Expect ';' after value.")
 	emitByte(chunk.OP_PRINT)
+}
+
+func whileStatement() {
+	loopStart := len(currentChunk().Code)
+	consume(scanner.TOKEN_LEFT_PAREN, "Expect '(' after 'while'.")
+	expression()
+	consume(scanner.TOKEN_RIGHT_PAREN, "Expect ')' after 'condition'.")
+
+	exitJump := emitJump(chunk.OP_JUMP_IF_FALSE)
+	emitByte(chunk.OP_POP)
+	statement()
+	emitLoop(loopStart)
+
+	patchJump(exitJump)
+	emitByte(chunk.OP_POP)
 }
 
 func synchronize() {
@@ -365,8 +473,12 @@ func declaration() {
 func statement() {
 	if match(scanner.TOKEN_PRINT) {
 		printStatement()
+	} else if match(scanner.TOKEN_FOR) {
+		forStatement()
 	} else if match(scanner.TOKEN_IF) {
 		ifStatement()
+	} else if match(scanner.TOKEN_WHILE) {
+		whileStatement()
 	} else if match(scanner.TOKEN_LEFT_BRACE) {
 		beginScope()
 		block()
@@ -532,12 +644,19 @@ func addLocal(name scanner.Token) {
 	local.depth = current.scopeDepth
 }
 
+// The function declareVariable() is where the compiler records
+// the existence of the variable.
 func declareVariable() {
-	if current.scopeDepth > 0 {
+	// We only do this for locals, so if we’re in the top-level global scope,
+	// we just bail out. Because global variables are late bound, the compiler
+	// doesn’t keep track of which declarations for them it has seen.
+	if current.scopeDepth == 0 {
 		return
 	}
 
-	name := &parser.previous
+	// But for local variables, the compiler does need to remember that the
+	// variable exists. That’s what declaring it does—it adds it to the compiler’s
+	// list of variables in the current scope. We implement that using addLocal().
 
 	// Local variables are appended to the array when they’re
 	// declared, which means the current scope is always at
@@ -548,6 +667,9 @@ func declareVariable() {
 	// we reach the beginning of the array or a variable owned
 	// by another scope, then we know we’ve checked all of the
 	// existing variables in the scope.
+
+	name := &parser.previous
+
 	for i := current.localCount - 1; i >= 0; i-- {
 		local := current.locals[i]
 		if local.depth != -1 && local.depth < current.scopeDepth {
