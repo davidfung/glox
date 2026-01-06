@@ -1,5 +1,9 @@
 package objval
 
+// This package is to workaround the import cycle problem
+// between object and value packages.  All code that depends
+// on both should be placed in this package.
+
 import (
 	"fmt"
 
@@ -39,6 +43,10 @@ func IS_OBJ(v value.Value) bool {
 	return v.Type_ == value.VAL_OBJ
 }
 
+func IS_FUNCTION(v value.Value) bool {
+	return IsObjType(v, object.OBJ_FUNCTION)
+}
+
 func IS_STRING(v value.Value) bool {
 	return IsObjType(v, object.OBJ_STRING)
 }
@@ -53,6 +61,18 @@ func AS_OBJ(v value.Value) object.Obj {
 		panic("Error: AS_OBJ() expects an object value.Value")
 	}
 	return obj
+}
+
+func AS_FUNCTION(v value.Value) object.ObjFunction {
+	obj, ok := v.Val.(object.Obj)
+	if !ok {
+		panic("Error: AS_FUNCTION() expects an object in a value.Value")
+	}
+	strFunction, ok := obj.Val.(object.ObjFunction)
+	if !ok {
+		panic("Error: AS_FUNCTION() expects a function object")
+	}
+	return strFunction
 }
 
 func AS_STRING(v value.Value) object.ObjString {
@@ -126,7 +146,12 @@ func ValuesEqual(a value.Value, b value.Value) bool {
 
 func printObject(val value.Value) {
 	switch OBJ_TYPE(val) {
+	case object.OBJ_FUNCTION:
+		object.PrintFunction(AS_FUNCTION(val))
 	case object.OBJ_STRING:
 		fmt.Printf("%s", AS_STRING(val))
 	}
 }
+
+//TODO next implment:
+//AS_FUNCTION

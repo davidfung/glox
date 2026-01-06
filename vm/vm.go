@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/davidfung/glox/chunk"
+	"github.com/davidfung/glox/common"
 	"github.com/davidfung/glox/compiler"
 	"github.com/davidfung/glox/debugger"
 	"github.com/davidfung/glox/object"
@@ -13,14 +14,21 @@ import (
 	"github.com/davidfung/glox/value"
 )
 
-const STACK_MAX = 256
+const FRAMES_MAX = 64
+const STACK_MAX = (FRAMES_MAX * common.UINT8_COUNT)
 
 type VM struct {
-	chunk    *chunk.Chunk
-	ip       int
-	stack    [STACK_MAX]value.Value
-	stackTop int
-	globals  table.Table
+	frames     [FRAMES_MAX]CallFrame
+	frameCount int
+	stack      [STACK_MAX]value.Value
+	stackTop   int
+	globals    table.Table
+}
+
+type CallFrame struct {
+	function object.ObjFunction
+	ip       uint8
+	slots    *[STACK_MAX]value.Value
 }
 
 type InterpretResult int
@@ -46,14 +54,16 @@ var vm VM
 
 func resetStack() {
 	vm.stackTop = 0
+	vm.frameCount = 0
 }
 
 func runtimeError(format string, args ...any) {
 	fmt.Fprintf(os.Stderr, format, args...)
 	fmt.Fprintln(os.Stderr)
 
-	instruction := vm.ip - 1
-	line := vm.chunk.Lines[instruction]
+	frame := vm.frames[vm.frameCount-1]
+	instruction := frame.ip - 1
+	line := frame.function.Chun.Lines[instruction]
 	fmt.Fprintf(os.Stderr, "[line %d] in script\n", line)
 	resetStack()
 }
@@ -120,40 +130,41 @@ func binary_op(op BinaryOp) InterpretResult {
 }
 
 func Interpret(source *string) InterpretResult {
-	var chun chunk.Chunk
-	chunk.InitChunk(&chun)
-
-	if !compiler.Compile(source, &chun) {
-		chunk.FreeChunk(&chun)
+	var function *object.ObjFunction = compiler.Compile(source)
+	if function == nil {
 		return INTERPRET_COMPILE_ERROR
 	}
 
-	vm.chunk = &chun
-	vm.ip = 0
+	obj := object.Obj{Type_: object.OBJ_FUNCTION, Val: *function}
+	push(objval.OBJ_VAL(obj))
+	frame := &vm.frames[vm.frameCount]
+	vm.frameCount++
+	frame.function = *function
+	frame.ip = 0
+	frame.slots = &vm.stack
 
-	result := run()
-
-	chunk.FreeChunk(&chun)
-	return result
+	return run()
 }
 
 func run() InterpretResult {
 	var result InterpretResult
 
+	var frame *CallFrame = &vm.frames[vm.frameCount-1]
+
 	readByte := func() uint8 {
-		instruction := vm.chunk.Code[vm.ip]
-		vm.ip++
+		instruction := frame.function.Chun.Code[frame.ip]
+		frame.ip++
 		return instruction
 	}
 
-	readConstant := func() value.Value {
-		return vm.chunk.Constants.Values[readByte()]
+	readShort := func() uint16 {
+		frame.ip += 2
+		var x uint16 = (uint16(frame.function.Chun.Code[frame.ip-2]) << 8) | uint16((frame.function.Chun.Code[frame.ip-1]))
+		return x
 	}
 
-	readShort := func() uint16 {
-		vm.ip += 2
-		var x uint16 = (uint16(vm.chunk.Code[vm.ip-2]) << 8) | uint16((vm.chunk.Code[vm.ip-1]))
-		return x
+	readConstant := func() value.Value {
+		return frame.function.Chun.Constants.Values[readByte()]
 	}
 
 	readString := func() object.ObjString {
@@ -169,7 +180,7 @@ func run() InterpretResult {
 				fmt.Printf("]")
 			}
 			fmt.Printf("\n")
-			debugger.DisassembleInstruction(vm.chunk, vm.ip)
+			debugger.DisassembleInstruction(&frame.function.Chun, int(frame.ip))
 		}
 
 		instruction := chunk.OpCode(readByte())
@@ -190,7 +201,7 @@ func run() InterpretResult {
 			// push it on top of the stack where later
 			// instructions can find it.
 			slot := readByte()
-			push(vm.stack[slot])
+			push(frame.slots[slot])
 		case chunk.OP_SET_LOCAL:
 			// Take the assigned value from the top of the
 			// stack and stores it in the stack slot corresponding
@@ -201,7 +212,7 @@ func run() InterpretResult {
 			// value itself, so the VM just leaves the value on the
 			// stack.
 			slot := readByte()
-			vm.stack[slot] = peek(0)
+			frame.slots[slot] = peek(0)
 		case chunk.OP_GET_GLOBAL:
 			name := readString()
 			val, ok := table.TableGet(&vm.globals, name)
@@ -276,15 +287,15 @@ func run() InterpretResult {
 			fmt.Println()
 		case chunk.OP_JUMP:
 			offset := readShort()
-			vm.ip += int(offset)
+			frame.ip += uint8(offset)
 		case chunk.OP_JUMP_IF_FALSE:
 			offset := readShort()
 			if isFalsey(peek(0)) {
-				vm.ip += int(offset)
+				frame.ip += uint8(offset)
 			}
 		case chunk.OP_LOOP:
 			offset := readShort()
-			vm.ip -= int(offset)
+			frame.ip -= uint8(offset)
 		case chunk.OP_RETURN:
 			// Exit interpreter.
 			return INTERPRET_OK

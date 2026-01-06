@@ -1,14 +1,29 @@
 package object
 
+import (
+	"fmt"
+
+	"github.com/davidfung/glox/chunk"
+)
+
 type ObjType int
 
 const (
-	OBJ_STRING ObjType = iota
+	_ ObjType = iota
+	OBJ_FUNCTION
+	OBJ_STRING
 )
 
 type Obj struct {
 	Type_ ObjType
 	Val   any
+}
+
+type ObjFunction struct {
+	Type_ ObjType
+	arity int
+	Chun  chunk.Chunk
+	Name  ObjString
 }
 
 type ObjString string
@@ -21,6 +36,10 @@ func CopyString(s *string, start int, length int) Obj {
 	return o
 }
 
+func PrintFunction(function ObjFunction) {
+	fmt.Printf("<fn %s>\n", function.Name)
+}
+
 // FNV-1a hash algorithm
 func hashString(s string, length int) uint32 {
 	var hash uint32 = 2166136261
@@ -29,4 +48,12 @@ func hashString(s string, length int) uint32 {
 		hash *= 16777619
 	}
 	return hash
+}
+
+func NewFunction() *ObjFunction {
+	fn := new(ObjFunction)
+	fn.arity = 0 // actually not necessary in glox
+	fn.Name = "" // actually not necessary in glox
+	chunk.InitChunk(&fn.Chun)
+	return fn
 }

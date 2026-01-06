@@ -7,16 +7,13 @@ import (
 	"strconv"
 
 	"github.com/davidfung/glox/chunk"
+	"github.com/davidfung/glox/common"
 	"github.com/davidfung/glox/debugger"
 	"github.com/davidfung/glox/object"
 	"github.com/davidfung/glox/objval"
 	"github.com/davidfung/glox/scanner"
 	"github.com/davidfung/glox/value"
 )
-
-const UINT8_MAX = 255
-const UINT16_MAX = 65536
-const UINT8_COUNT = (UINT8_MAX + 1)
 
 type Parser struct {
 	current   scanner.Token
@@ -54,6 +51,14 @@ type Local struct {
 	depth int
 }
 
+type FunctionType int
+
+const (
+	_ FunctionType = iota
+	TYPE_FUNCTION
+	TYPE_SCRIPT
+)
+
 // We have a simple, flat array of all locals that are in scope
 // during each point in the compilation process.  They are ordered
 // in the array in the order that their declarations appear in the
@@ -62,7 +67,10 @@ type Local struct {
 // of locals that can be in scope at once. That means we can also
 // give the locals array a fixed size.
 type Compiler struct {
-	locals     [UINT8_COUNT]Local
+	function *object.ObjFunction
+	type_    FunctionType
+
+	locals     [common.UINT8_COUNT]Local
 	localCount int
 	scopeDepth int
 }
@@ -73,7 +81,7 @@ var compilingChunk *chunk.Chunk
 var rules []ParseRule
 
 func currentChunk() *chunk.Chunk {
-	return compilingChunk
+	return &current.function.Chun
 }
 
 // This function is a convenient function in glox, and is not in
@@ -158,7 +166,7 @@ func emitLoop(loopStart int) {
 	emitByte(chunk.OP_LOOP)
 
 	offset := len(currentChunk().Code) - loopStart + 2
-	if offset > UINT16_MAX {
+	if offset > common.UINT16_MAX {
 		error("Loop body too large.")
 	}
 
@@ -199,7 +207,7 @@ func patchJump(offset int) {
 	// -2 to adjust for the bytecode for the jump offset itself.
 	jump := len(currentChunk().Code) - offset - 2
 
-	if jump > UINT16_MAX {
+	if jump > common.UINT16_MAX {
 		error("Too much code to jump over.")
 	}
 
@@ -207,19 +215,40 @@ func patchJump(offset int) {
 	currentChunk().Code[offset+1] = uint8(jump & 0xff)
 }
 
-func initCompiler(compiler *Compiler) {
+func initCompiler(compiler *Compiler, type_ FunctionType) {
+	compiler.function = nil
+	compiler.type_ = type_
 	compiler.localCount = 0
 	compiler.scopeDepth = 0
+	compiler.function = object.NewFunction()
 	current = compiler
+
+	// The compiler’s locals array keeps track of which stack
+	// slots are associated with which local variables or temporaries.
+	// The compiler implicitly claims stack slot zero for the
+	// VM’s own internal use. We give it an empty name so that
+	// the user can’t write an identifier that refers to it.
+	var local Local
+	local = current.locals[current.localCount]
+	current.localCount++
+	local.depth = 0
+	local.name.Start = 0
+	local.name.Length = 0
 }
 
-func endCompiler() {
+func endCompiler() *object.ObjFunction {
 	emitReturn()
+	var function *object.ObjFunction = current.function
 	if debugger.DEBUG_PRINT_CODE {
 		if !parser.hadError {
+			name := function.Name
+			if name == "" {
+				name = "<script>"
+			}
 			debugger.DisassembleChunk(currentChunk(), "code")
 		}
 	}
+	return function
 }
 
 func beginScope() {
@@ -633,7 +662,7 @@ func resolveLocal(compiler *Compiler, name *scanner.Token) int {
 // of variables.  It stores the variable's name and the depth
 // of the scope that owns the variable.
 func addLocal(name scanner.Token) {
-	if current.localCount == UINT8_COUNT {
+	if current.localCount == common.UINT8_COUNT {
 		error("Too may local variables in function.")
 		return
 	}
@@ -787,11 +816,10 @@ func initParseRules() {
 	}
 }
 
-func Compile(source *string, chunk *chunk.Chunk) bool {
+func Compile(source *string) *object.ObjFunction {
 	scanner.InitScanner(source)
 	var compiler Compiler
-	initCompiler(&compiler)
-	compilingChunk = chunk
+	initCompiler(&compiler, TYPE_SCRIPT)
 
 	parser.hadError = false
 	parser.panicMode = false
@@ -801,6 +829,10 @@ func Compile(source *string, chunk *chunk.Chunk) bool {
 	for !match(scanner.TOKEN_EOF) {
 		declaration()
 	}
-	endCompiler()
-	return !parser.hadError
+	function := endCompiler()
+	if parser.hadError {
+		return nil
+	} else {
+		return function
+	}
 }

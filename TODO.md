@@ -1,5 +1,5 @@
 ## NEXT
-[ ] Chapter 23 Calls and Functions
+[ ] 24.4 Function Declarations
 
 ## TODO
 [ ] modernize hashString() in object.go (using range)
