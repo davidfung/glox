@@ -67,8 +67,9 @@ const (
 // of locals that can be in scope at once. That means we can also
 // give the locals array a fixed size.
 type Compiler struct {
-	function *object.ObjFunction
-	type_    FunctionType
+	enclosing *Compiler
+	function  *object.ObjFunction
+	type_     FunctionType
 
 	locals     [common.UINT8_COUNT]Local
 	localCount int
@@ -216,6 +217,7 @@ func patchJump(offset int) {
 }
 
 func initCompiler(compiler *Compiler, type_ FunctionType) {
+	compiler.enclosing = current
 	compiler.function = nil
 	compiler.type_ = type_
 	compiler.localCount = 0
@@ -248,6 +250,7 @@ func endCompiler() *object.ObjFunction {
 			debugger.DisassembleChunk(currentChunk(), "code")
 		}
 	}
+	current = current.enclosing
 	return function
 }
 
