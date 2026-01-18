@@ -21,7 +21,7 @@ type Obj struct {
 
 type ObjFunction struct {
 	Type_ ObjType
-	arity int
+	Arity int
 	Chun  chunk.Chunk
 	Name  ObjString
 }
@@ -52,7 +52,7 @@ func hashString(s string, length int) uint32 {
 
 func NewFunction() *ObjFunction {
 	fn := new(ObjFunction)
-	fn.arity = 0 // actually not necessary in glox
+	fn.Arity = 0 // actually not necessary in glox
 	fn.Name = "" // actually not necessary in glox
 	chunk.InitChunk(&fn.Chun)
 	return fn

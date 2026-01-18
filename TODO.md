@@ -1,5 +1,5 @@
 ## NEXT
-[ ] 24.4 Function Declarations
+[ ] 24.4.1 A stack of compilers
 
 ## TODO
 [ ] modernize hashString() in object.go (using range)

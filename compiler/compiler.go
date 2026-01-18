@@ -224,6 +224,13 @@ func initCompiler(compiler *Compiler, type_ FunctionType) {
 	compiler.scopeDepth = 0
 	compiler.function = object.NewFunction()
 	current = compiler
+	if type_ != TYPE_SCRIPT {
+		source := parser.previous.Source
+		start := parser.previous.Start
+		length := parser.previous.Length
+		name := (*source)[start : start+length]
+		current.function.Name = object.ObjString(name)
+	}
 
 	// The compiler’s locals array keeps track of which stack
 	// slots are associated with which local variables or temporaries.
@@ -348,6 +355,42 @@ func block() {
 		declaration()
 	}
 	consume(scanner.TOKEN_RIGHT_BRACE, "Expect '}' after block.")
+}
+
+func function(type_ FunctionType) {
+	var compiler Compiler
+	initCompiler(&compiler, type_)
+	beginScope() // no need for a matching endScope()
+
+	//fun() {}
+	consume(scanner.TOKEN_LEFT_PAREN, "Expect '(' after function name.")
+	if !check(scanner.TOKEN_RIGHT_PAREN) {
+		for {
+			current.function.Arity++
+			if current.function.Arity > 255 {
+				errorAtCurrent("Can't have more than 255 parameters.")
+			}
+			constant := parseVariable("Expect parameter name.")
+			defineVariable(constant)
+			if !match(scanner.TOKEN_COMMA) {
+				break
+			}
+		}
+	}
+	consume(scanner.TOKEN_RIGHT_PAREN, "Expect ')' after parameters.")
+	consume(scanner.TOKEN_LEFT_BRACE, "Expect '{' after function body.")
+	block()
+
+	function := endCompiler()
+	obj := object.Obj{Type_: object.OBJ_FUNCTION, Val: *function}
+	emitBytes(chunk.OP_CONSTANT, makeConstant(objval.OBJ_VAL(obj)))
+}
+
+func funDeclaration() {
+	global := parseVariable("Expect function name.")
+	markInitialized()
+	function(TYPE_FUNCTION)
+	defineVariable(global)
 }
 
 // The production of declaration grammar rule.
@@ -492,7 +535,9 @@ func synchronize() {
 }
 
 func declaration() {
-	if match(scanner.TOKEN_VAR) {
+	if match(scanner.TOKEN_FUN) {
+		funDeclaration()
+	} else if match(scanner.TOKEN_VAR) {
 		varDeclaration()
 	} else {
 		statement()
@@ -732,6 +777,12 @@ func parseVariable(errorMessage string) uint8 {
 }
 
 func markInitialized() {
+	if current.scopeDepth == 0 {
+		// When a top-level function declaration calls this
+		// function, there is no local variable to mark initialized
+		// because the function is bound to a global variable.
+		return
+	}
 	current.locals[current.localCount-1].depth = current.scopeDepth
 }
 
