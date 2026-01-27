@@ -10,6 +10,12 @@ func TestScripts(t *testing.T) {
 		input string
 		want  InterpretResult
 	}{
+		{`
+		fun areWeHavingItYet() {
+            print "Yes we are!";
+        }
+		print areWeHavingItYet;
+		`, INTERPRET_OK},
 		{`var x = 1; print x;`, INTERPRET_OK},
 		{`var drink = "coffee";
 	      var breakfast = "crossiant with " + drink;

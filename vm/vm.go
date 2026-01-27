@@ -20,15 +20,15 @@ const STACK_MAX = (FRAMES_MAX * common.UINT8_COUNT)
 type VM struct {
 	frames     [FRAMES_MAX]CallFrame
 	frameCount int
-	stack      [STACK_MAX]value.Value
+	stack      []value.Value
 	stackTop   int
 	globals    table.Table
 }
 
 type CallFrame struct {
 	function object.ObjFunction
-	ip       uint8
-	slots    *[STACK_MAX]value.Value
+	ip       int
+	slots    []value.Value
 }
 
 type InterpretResult int
@@ -61,10 +61,19 @@ func runtimeError(format string, args ...any) {
 	fmt.Fprintf(os.Stderr, format, args...)
 	fmt.Fprintln(os.Stderr)
 
-	frame := vm.frames[vm.frameCount-1]
-	instruction := frame.ip - 1
-	line := frame.function.Chun.Lines[instruction]
-	fmt.Fprintf(os.Stderr, "[line %d] in script\n", line)
+	// stack trace
+	for i := vm.frameCount - 1; i >= 0; i-- {
+		frame := &vm.frames[i]
+		function := frame.function
+		instruction := frame.ip - 1
+		fmt.Fprintf(os.Stderr, "[line %d] in ", function.Chun.Lines[instruction])
+		if function.Name == "" {
+			fmt.Fprintf(os.Stderr, "script\n")
+		} else {
+			fmt.Fprintf(os.Stderr, "%s()\n", function.Name)
+		}
+	}
+
 	resetStack()
 }
 
@@ -89,6 +98,39 @@ func pop() value.Value {
 
 func peek(distance int) value.Value {
 	return vm.stack[vm.stackTop-1-distance]
+}
+
+func call(function object.ObjFunction, argCount uint) bool {
+	if argCount != uint(function.Arity) {
+		runtimeError("Expected %d arguments but got %d", function.Arity, argCount)
+		return false
+	}
+
+	if vm.frameCount == FRAMES_MAX {
+		runtimeError("Stack overflow.")
+		return false
+	}
+
+	frame := &vm.frames[vm.frameCount]
+	vm.frameCount++
+	frame.function = function
+	frame.ip = 0
+	// frame.slots = uint(vm.stackTop) - uint(argCount) - 1
+	frame.slots = vm.stack[vm.stackTop-int(argCount)-1:]
+	return true
+}
+
+func callValue(callee value.Value, argCount uint) bool {
+	if objval.IS_OBJ(callee) {
+		switch objval.OBJ_TYPE(callee) {
+		case object.OBJ_FUNCTION:
+			return call(objval.AS_FUNCTION(callee), argCount)
+		default:
+			// Non-callable object type.
+		}
+	}
+	runtimeError(("Can only call functions and classes."))
+	return false
 }
 
 func isFalsey(val value.Value) bool {
@@ -135,13 +177,10 @@ func Interpret(source *string) InterpretResult {
 		return INTERPRET_COMPILE_ERROR
 	}
 
-	obj := object.Obj{Type_: object.OBJ_FUNCTION, Val: *function}
-	push(objval.OBJ_VAL(obj))
-	frame := &vm.frames[vm.frameCount]
-	vm.frameCount++
-	frame.function = *function
-	frame.ip = 0
-	frame.slots = &vm.stack
+	obj := object.Obj{Type_: object.OBJ_FUNCTION, Val: function}
+	val := objval.OBJ_VAL(obj)
+	push(val)
+	call(*function, 0)
 
 	return run()
 }
@@ -287,18 +326,33 @@ func run() InterpretResult {
 			fmt.Println()
 		case chunk.OP_JUMP:
 			offset := readShort()
-			frame.ip += uint8(offset)
+			frame.ip += int(offset)
 		case chunk.OP_JUMP_IF_FALSE:
 			offset := readShort()
 			if isFalsey(peek(0)) {
-				frame.ip += uint8(offset)
+				frame.ip += int(offset)
 			}
 		case chunk.OP_LOOP:
 			offset := readShort()
-			frame.ip -= uint8(offset)
+			frame.ip -= int(offset)
+		case chunk.OP_CALL:
+			argCount := readByte()
+			fn := peek(int(argCount))
+			if !callValue(fn, uint(argCount)) {
+				return INTERPRET_RUNTIME_ERROR
+			}
+			frame = &vm.frames[vm.frameCount-1]
 		case chunk.OP_RETURN:
-			// Exit interpreter.
-			return INTERPRET_OK
+			result := pop()
+			vm.frameCount--
+			if vm.frameCount == 0 {
+				pop()
+				return INTERPRET_OK
+			}
+
+			// vm.stackTop = frame->slots //// no need
+			push(result)
+			frame = &vm.frames[vm.frameCount-1]
 		}
 	}
 }

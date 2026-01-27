@@ -183,6 +183,7 @@ func emitJump[B chunk.Byte](byte_ B) int {
 }
 
 func emitReturn() {
+	emitByte(chunk.OP_NIL)
 	emitByte(chunk.OP_RETURN)
 }
 
@@ -308,6 +309,11 @@ func binary(canAssign bool) {
 	default:
 		return // Unreachable.
 	}
+}
+
+func call(canAssign bool) {
+	argCount := argumentList()
+	emitBytes(chunk.OP_CALL, argCount)
 }
 
 func literal(canAssign bool) {
@@ -489,6 +495,20 @@ func printStatement() {
 	emitByte(chunk.OP_PRINT)
 }
 
+func returnStatement() {
+	if current.type_ == TYPE_SCRIPT {
+		error("Can't return from top-level code.")
+	}
+
+	if match(scanner.TOKEN_SEMICOLON) {
+		emitReturn()
+	} else {
+		expression()
+		consume(scanner.TOKEN_SEMICOLON, "Expect ';' after return value.")
+		emitByte(chunk.OP_RETURN)
+	}
+}
+
 func whileStatement() {
 	loopStart := len(currentChunk().Code)
 	consume(scanner.TOKEN_LEFT_PAREN, "Expect '(' after 'while'.")
@@ -554,6 +574,8 @@ func statement() {
 		forStatement()
 	} else if match(scanner.TOKEN_IF) {
 		ifStatement()
+	} else if match(scanner.TOKEN_RETURN) {
+		returnStatement()
 	} else if match(scanner.TOKEN_WHILE) {
 		whileStatement()
 	} else if match(scanner.TOKEN_LEFT_BRACE) {
@@ -804,6 +826,24 @@ func defineVariable(global uint8) {
 	emitBytes(chunk.OP_DEFINE_GLOBAL, global)
 }
 
+func argumentList() uint8 {
+	var argCount uint8 = 0
+	if !check(scanner.TOKEN_RIGHT_PAREN) {
+		for {
+			expression()
+			if argCount == 255 {
+				error("Can't have more than 255 arguments.")
+			}
+			argCount++
+			if !match(scanner.TOKEN_COMMA) {
+				break
+			}
+		}
+	}
+	consume(scanner.TOKEN_RIGHT_PAREN, "Expect ')' after arguments")
+	return argCount
+}
+
 // At the point this is called, the left-hand side expression
 // has already been compiled. That means at runtime, its value
 // will be on top of the stack. If that value is falsey, then
@@ -827,7 +867,7 @@ func getRule(tokenType scanner.TokenType) ParseRule {
 
 func initParseRules() {
 	rules = []ParseRule{
-		scanner.TOKEN_LEFT_PAREN:    {grouping, nil, PREC_NONE},
+		scanner.TOKEN_LEFT_PAREN:    {grouping, call, PREC_CALL},
 		scanner.TOKEN_RIGHT_PAREN:   {nil, nil, PREC_NONE},
 		scanner.TOKEN_LEFT_BRACE:    {nil, nil, PREC_NONE},
 		scanner.TOKEN_RIGHT_BRACE:   {nil, nil, PREC_NONE},
