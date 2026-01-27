@@ -20,7 +20,7 @@ const STACK_MAX = (FRAMES_MAX * common.UINT8_COUNT)
 type VM struct {
 	frames     [FRAMES_MAX]CallFrame
 	frameCount int
-	stack      []value.Value
+	stack      [STACK_MAX]value.Value
 	stackTop   int
 	globals    table.Table
 }
