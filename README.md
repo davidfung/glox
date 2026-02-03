@@ -23,6 +23,8 @@ Many comments in the code are taken directly from the book Crafting Interpreters
     - type -> type_
     - string() -> str() // compiler.go
   - glox does not have common.h, so need to scatter the definitions defined in common.h elsewhere.
+  - Avoid using pointer in glox because that goes against the philosophy of Go which make it difficult to convert from C to Go.
+  - In Go, cannot assign nil to a struct.
 
 ## Implementation
 

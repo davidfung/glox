@@ -8,7 +8,7 @@ import (
 )
 
 const DEBUG_PRINT_CODE = true
-const DEBUG_TRACE_EXECUTION = false
+const DEBUG_TRACE_EXECUTION = (0 == 0)
 
 func DisassembleChunk(chun *chunk.Chunk, name string) {
 	fmt.Printf("== %s ==\n", name)

@@ -37,7 +37,7 @@ func CopyString(s *string, start int, length int) Obj {
 }
 
 func PrintFunction(function ObjFunction) {
-	fmt.Printf("<fn %s>\n", function.Name)
+	fmt.Printf("<fn %s>", function.Name)
 }
 
 // FNV-1a hash algorithm
@@ -50,10 +50,10 @@ func hashString(s string, length int) uint32 {
 	return hash
 }
 
-func NewFunction() *ObjFunction {
+func NewFunction() ObjFunction {
 	fn := new(ObjFunction)
 	fn.Arity = 0 // actually not necessary in glox
 	fn.Name = "" // actually not necessary in glox
 	chunk.InitChunk(&fn.Chun)
-	return fn
+	return *fn
 }

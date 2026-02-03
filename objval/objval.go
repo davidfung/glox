@@ -152,6 +152,3 @@ func printObject(val value.Value) {
 		fmt.Printf("%s", AS_STRING(val))
 	}
 }
-
-//TODO next implment:
-//AS_FUNCTION

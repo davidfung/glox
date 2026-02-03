@@ -172,15 +172,15 @@ func binary_op(op BinaryOp) InterpretResult {
 }
 
 func Interpret(source *string) InterpretResult {
-	var function *object.ObjFunction = compiler.Compile(source)
-	if function == nil {
+	var function object.ObjFunction = compiler.Compile(source)
+	if function.Arity == (-1) {
 		return INTERPRET_COMPILE_ERROR
 	}
 
 	obj := object.Obj{Type_: object.OBJ_FUNCTION, Val: function}
 	val := objval.OBJ_VAL(obj)
 	push(val)
-	call(*function, 0)
+	call(function, 0)
 
 	return run()
 }

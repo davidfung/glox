@@ -68,7 +68,7 @@ const (
 // give the locals array a fixed size.
 type Compiler struct {
 	enclosing *Compiler
-	function  *object.ObjFunction
+	function  object.ObjFunction
 	type_     FunctionType
 
 	locals     [common.UINT8_COUNT]Local
@@ -219,7 +219,6 @@ func patchJump(offset int) {
 
 func initCompiler(compiler *Compiler, type_ FunctionType) {
 	compiler.enclosing = current
-	compiler.function = nil
 	compiler.type_ = type_
 	compiler.localCount = 0
 	compiler.scopeDepth = 0
@@ -246,9 +245,9 @@ func initCompiler(compiler *Compiler, type_ FunctionType) {
 	local.name.Length = 0
 }
 
-func endCompiler() *object.ObjFunction {
+func endCompiler() object.ObjFunction {
 	emitReturn()
-	var function *object.ObjFunction = current.function
+	var function object.ObjFunction = current.function
 	if debugger.DEBUG_PRINT_CODE {
 		if !parser.hadError {
 			name := function.Name
@@ -388,7 +387,7 @@ func function(type_ FunctionType) {
 	block()
 
 	function := endCompiler()
-	obj := object.Obj{Type_: object.OBJ_FUNCTION, Val: *function}
+	obj := object.Obj{Type_: object.OBJ_FUNCTION, Val: function}
 	emitBytes(chunk.OP_CONSTANT, makeConstant(objval.OBJ_VAL(obj)))
 }
 
@@ -910,7 +909,7 @@ func initParseRules() {
 	}
 }
 
-func Compile(source *string) *object.ObjFunction {
+func Compile(source *string) object.ObjFunction {
 	scanner.InitScanner(source)
 	var compiler Compiler
 	initCompiler(&compiler, TYPE_SCRIPT)
@@ -925,7 +924,8 @@ func Compile(source *string) *object.ObjFunction {
 	}
 	function := endCompiler()
 	if parser.hadError {
-		return nil
+		// Use Arity = -1 to denote a nil structure in Go.
+		return object.ObjFunction{Arity: -1}
 	} else {
 		return function
 	}
