@@ -254,7 +254,7 @@ func endCompiler() object.ObjFunction {
 			if name == "" {
 				name = "<script>"
 			}
-			debugger.DisassembleChunk(currentChunk(), "code")
+			debugger.DisassembleChunk(currentChunk(), string(name))
 		}
 	}
 	current = current.enclosing

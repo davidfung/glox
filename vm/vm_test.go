@@ -25,6 +25,12 @@ func TestScripts(t *testing.T) {
 func initTestTable() []tests {
 	var tests = []tests{
 		{`
+		fun sum(a, b, c) {
+            return a + b + c;
+        }
+        print 4 + sum(5, 6, 7);
+		`, INTERPRET_OK},
+		{`
 		fun one() {
 			return 1;
 		}

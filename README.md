@@ -66,15 +66,23 @@ There is an import cycle between value.go and object.go.  The cycle is broken by
 
 Like tagged union, we use interface to implement struct inheritance in clox.
 
-## Value
+## Object & Value
+
+An object is a struct with 2 fields representing its type and its object value.  ObjString is an alias to string in glox.
+
+structure Object {
+  type // ObjFunction or ObjString
+  value
+}
 
 A value is a struct with 2 fields representing its type and value.  The value can be a primitive data type, or an object.
 
+structure Value {
+  type // bool, nil, number, object
+  value
+}
+
 Difference from clox: VAL_UNDEFINED ValueType is added in glox, so that the zero value of Value will not show up with type VAL_BOOL.
-
-## Object
-
-An object is a struct with 2 fields representing its type and its object value.  ObjString is an alias to string in glox.
 
 ## String Interning
 
@@ -94,11 +102,15 @@ The locals array in the compiler struct has the exact same layout  as the VM's s
 
 Since Lox does not have error handling construct, most of the testings are just running valid Lox scripts (vm_test.go) to see if they crash without checking their output.
 
-## Debugging
+## Troubleshooting
 
 The following is the most common bugs:
   - missing statement
   - incorrect equality test
+
+If I have to do it again, I will not translate the C code literally to Go, but just the concept.  For example, avoid using pointers.
+
+When reading code, always keep in mind whether it is executing at compile time or run time.  Hint: is the code in compiler.go or vm.go :P
 
 ## Future Improvement
 

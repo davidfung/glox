@@ -349,8 +349,8 @@ func run() InterpretResult {
 				pop()
 				return INTERPRET_OK
 			}
-
-			// vm.stackTop = frame->slots //// no need
+			// vm.stackTop = frame->slots // clox
+			vm.stackTop = vm.stackTop - frame.function.Arity - 1 // discard the parameters and the function object
 			push(result)
 			frame = &vm.frames[vm.frameCount-1]
 		}
