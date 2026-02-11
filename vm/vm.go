@@ -3,6 +3,7 @@ package vm
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/davidfung/glox/chunk"
 	"github.com/davidfung/glox/common"
@@ -52,6 +53,12 @@ const (
 
 var vm VM
 
+func clockNative(argCount int, args []value.Value) value.Value {
+	seconds := time.Now().Unix()
+	val := objval.NUMBER_VAL(float64(seconds))
+	return val
+}
+
 func resetStack() {
 	vm.stackTop = 0
 	vm.frameCount = 0
@@ -77,9 +84,17 @@ func runtimeError(format string, args ...any) {
 	resetStack()
 }
 
+func defineNative(name string, function object.NativeFn) {
+	objFn := object.Obj{Type_: object.OBJ_FUNCTION, Val: function}
+	valFn := objval.OBJ_VAL(objFn)
+	table.TableSet(&vm.globals, object.ObjString(name), valFn)
+}
+
 func InitVM() {
 	resetStack()
 	table.InitTable(&vm.globals)
+
+	defineNative("clock", clockNative)
 }
 
 func FreeVM() {
@@ -125,6 +140,12 @@ func callValue(callee value.Value, argCount uint) bool {
 		switch objval.OBJ_TYPE(callee) {
 		case object.OBJ_FUNCTION:
 			return call(objval.AS_FUNCTION(callee), argCount)
+		case object.OBJ_NATIVE:
+			native := objval.AS_NATIVE(callee)
+			result := native(int(argCount), vm.stack[vm.stackTop-int(argCount):])
+			vm.stackTop -= int(argCount + 1)
+			push(result)
+			return true
 		default:
 			// Non-callable object type.
 		}

@@ -11,8 +11,8 @@ const (
 )
 
 type Value struct {
-	Type_ ValueType // promote to export field?
-	Val   any       // promote to export field?
+	Type_ ValueType
+	Val   any
 }
 
 type ValueArray struct {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/davidfung/glox/chunk"
+	"github.com/davidfung/glox/value"
 )
 
 type ObjType int
@@ -11,6 +12,7 @@ type ObjType int
 const (
 	_ ObjType = iota
 	OBJ_FUNCTION
+	OBJ_NATIVE
 	OBJ_STRING
 )
 
@@ -24,6 +26,13 @@ type ObjFunction struct {
 	Arity int
 	Chun  chunk.Chunk
 	Name  ObjString
+}
+
+type NativeFn func(argCount int, args []value.Value) value.Value
+
+type ObjNative struct {
+	Type_    ObjType
+	Function NativeFn
 }
 
 type ObjString string
@@ -56,4 +65,9 @@ func NewFunction() ObjFunction {
 	fn.Name = "" // actually not necessary in glox
 	chunk.InitChunk(&fn.Chun)
 	return *fn
+}
+
+func NewNative(function NativeFn) ObjNative {
+	native := ObjNative{Type_: OBJ_NATIVE, Function: function}
+	return native
 }

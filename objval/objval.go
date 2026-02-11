@@ -47,6 +47,10 @@ func IS_FUNCTION(v value.Value) bool {
 	return IsObjType(v, object.OBJ_FUNCTION)
 }
 
+func IS_NATIVE(v value.Value) bool {
+	return IsObjType(v, object.OBJ_NATIVE)
+}
+
 func IS_STRING(v value.Value) bool {
 	return IsObjType(v, object.OBJ_STRING)
 }
@@ -68,11 +72,24 @@ func AS_FUNCTION(v value.Value) object.ObjFunction {
 	if !ok {
 		panic("Error: AS_FUNCTION() expects an object in a value.Value")
 	}
-	strFunction, ok := obj.Val.(object.ObjFunction)
+	objFunction, ok := obj.Val.(object.ObjFunction)
 	if !ok {
 		panic("Error: AS_FUNCTION() expects a function object")
 	}
-	return strFunction
+	return objFunction
+}
+
+func AS_NATIVE(v value.Value) object.NativeFn {
+	obj, ok := v.Val.(object.Obj)
+	if !ok {
+		panic("Error: AS_NATIVE() expects an object in a value.Value")
+	}
+	objNative, ok := obj.Val.(object.ObjNative)
+	if !ok {
+		panic("Error: AS_NATIVE() expects a native function object")
+	}
+	native := objNative.Function
+	return native
 }
 
 func AS_STRING(v value.Value) object.ObjString {
@@ -148,6 +165,8 @@ func printObject(val value.Value) {
 	switch OBJ_TYPE(val) {
 	case object.OBJ_FUNCTION:
 		object.PrintFunction(AS_FUNCTION(val))
+	case object.OBJ_NATIVE:
+		fmt.Printf("<native fn>") // can we also print the native function name?
 	case object.OBJ_STRING:
 		fmt.Printf("%s", AS_STRING(val))
 	}
