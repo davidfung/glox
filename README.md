@@ -68,7 +68,10 @@ Like tagged union, we use interface to implement struct inheritance in clox.
 
 ## Object & Value
 
-An object is a struct with 2 fields representing its type and its object value.  ObjString is an alias to string in glox.
+An object is a struct with 2 fields representing its type and its object value.  
+ObjFunction is a struct which has its own chunk of code.
+ObjString is an alias to string in glox.
+ObjNative is an alias to NativeFn
 
 structure Object {
   type // ObjFunction or ObjString
@@ -82,7 +85,9 @@ structure Value {
   value
 }
 
-Difference from clox: VAL_UNDEFINED ValueType is added in glox, so that the zero value of Value will not show up with type VAL_BOOL.
+Difference from clox: 
+1. VAL_UNDEFINED ValueType is added in glox, so that the zero value of Value will not show up with type VAL_BOOL.
+2. clox uses structure overlay in representing different type of objects.  glox does not have structure overlay, so its object structure is similar to a value structure, which has a type field, and a value field to hold the actual object.
 
 ## String Interning
 

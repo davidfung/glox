@@ -84,11 +84,10 @@ func AS_NATIVE(v value.Value) object.NativeFn {
 	if !ok {
 		panic("Error: AS_NATIVE() expects an object in a value.Value")
 	}
-	objNative, ok := obj.Val.(object.ObjNative)
-	if !ok {
+	if obj.Type_ != object.OBJ_NATIVE {
 		panic("Error: AS_NATIVE() expects a native function object")
 	}
-	native := objNative.Function
+	native := obj.Val.(object.NativeFn)
 	return native
 }
 

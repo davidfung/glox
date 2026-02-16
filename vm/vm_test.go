@@ -25,6 +25,15 @@ func TestScripts(t *testing.T) {
 func initTestTable() []tests {
 	var tests = []tests{
 		{`
+		fun fib(n) {
+  			if (n < 2) return n;
+  			return fib(n - 2) + fib(n - 1);
+		}
+		var start = clock();
+		print fib(10);
+		print clock() - start;
+		`, INTERPRET_OK},
+		{`
 		fun sum(a, b, c) {
             return a + b + c;
         }

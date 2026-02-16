@@ -85,9 +85,9 @@ func runtimeError(format string, args ...any) {
 }
 
 func defineNative(name string, function object.NativeFn) {
-	objFn := object.Obj{Type_: object.OBJ_FUNCTION, Val: function}
-	valFn := objval.OBJ_VAL(objFn)
-	table.TableSet(&vm.globals, object.ObjString(name), valFn)
+	objNat := object.Obj{Type_: object.OBJ_NATIVE, Val: function}
+	valNat := objval.OBJ_VAL(objNat)
+	table.TableSet(&vm.globals, object.ObjString(name), valNat)
 }
 
 func InitVM() {

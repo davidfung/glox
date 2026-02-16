@@ -30,10 +30,7 @@ type ObjFunction struct {
 
 type NativeFn func(argCount int, args []value.Value) value.Value
 
-type ObjNative struct {
-	Type_    ObjType
-	Function NativeFn
-}
+type ObjNative NativeFn
 
 type ObjString string
 
@@ -43,6 +40,20 @@ func CopyString(s *string, start int, length int) Obj {
 	d := ObjString((*s)[start : start+length])
 	o := Obj{Type_: OBJ_STRING, Val: d}
 	return o
+}
+
+// This is a glox only function.
+func PrintObjectType(obj Obj) {
+	switch obj.Type_ {
+	case OBJ_FUNCTION:
+		objFn := obj.Val.(ObjFunction)
+		name := objFn.Name
+		fmt.Printf("object (%s): %s\n", "Function", name)
+	case OBJ_NATIVE:
+		fmt.Printf("object (%s): %s\n", "Native", "<native function>")
+	case OBJ_STRING:
+		fmt.Printf("object (%s): %s\n", "String", obj.Val)
+	}
 }
 
 func PrintFunction(function ObjFunction) {
@@ -65,9 +76,4 @@ func NewFunction() ObjFunction {
 	fn.Name = "" // actually not necessary in glox
 	chunk.InitChunk(&fn.Chun)
 	return *fn
-}
-
-func NewNative(function NativeFn) ObjNative {
-	native := ObjNative{Type_: OBJ_NATIVE, Function: function}
-	return native
 }
