@@ -22,7 +22,6 @@ type Obj struct {
 }
 
 type ObjFunction struct {
-	Type_ ObjType
 	Arity int
 	Chun  chunk.Chunk
 	Name  ObjString
