@@ -59,6 +59,24 @@ func clockNative(argCount int, args []value.Value) value.Value {
 	return val
 }
 
+func fibNative(argCount int, args []value.Value) value.Value {
+	n := int(args[0].Val.(float64))
+	var acc float64
+	if n <= 1 {
+		acc = float64(n)
+	} else {
+		var p2 float64 = 0
+		var p1 float64 = 1
+		for i := 2; i <= n; i++ {
+			acc = p1 + p2
+			p2 = p1
+			p1 = acc
+		}
+	}
+	val := objval.NUMBER_VAL(acc)
+	return val
+}
+
 func resetStack() {
 	vm.stackTop = 0
 	vm.frameCount = 0
@@ -95,6 +113,7 @@ func InitVM() {
 	table.InitTable(&vm.globals)
 
 	defineNative("clock", clockNative)
+	defineNative("fibnative", fibNative)
 }
 
 func FreeVM() {
