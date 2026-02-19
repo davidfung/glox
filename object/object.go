@@ -11,6 +11,7 @@ type ObjType int
 
 const (
 	_ ObjType = iota
+	OBJ_CLOSURE
 	OBJ_FUNCTION
 	OBJ_NATIVE
 	OBJ_STRING
@@ -19,6 +20,10 @@ const (
 type Obj struct {
 	Type_ ObjType
 	Val   any
+}
+
+type ObjClosure struct {
+	Function ObjFunction
 }
 
 type ObjFunction struct {
@@ -67,6 +72,12 @@ func hashString(s string, length int) uint32 {
 		hash *= 16777619
 	}
 	return hash
+}
+
+func NewClosure(function ObjFunction) ObjClosure {
+	closure := new(ObjClosure)
+	closure.Function = function
+	return *closure
 }
 
 func NewFunction() ObjFunction {

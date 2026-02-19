@@ -43,6 +43,10 @@ func IS_OBJ(v value.Value) bool {
 	return v.Type_ == value.VAL_OBJ
 }
 
+func IS_CLOSURE(v value.Value) bool {
+	return IsObjType(v, object.OBJ_CLOSURE)
+}
+
 func IS_FUNCTION(v value.Value) bool {
 	return IsObjType(v, object.OBJ_FUNCTION)
 }
@@ -65,6 +69,18 @@ func AS_OBJ(v value.Value) object.Obj {
 		panic("Error: AS_OBJ() expects an object value.Value")
 	}
 	return obj
+}
+
+func AS_CLOSURE(v value.Value) object.ObjClosure {
+	obj, ok := v.Val.(object.Obj)
+	if !ok {
+		panic("Error: AS_CLOSURE() expects an object in a value.Value")
+	}
+	objClosure, ok := obj.Val.(object.ObjClosure)
+	if !ok {
+		panic("Error: AS_CLOSURE() expects a closure object")
+	}
+	return objClosure
 }
 
 func AS_FUNCTION(v value.Value) object.ObjFunction {
@@ -162,6 +178,8 @@ func ValuesEqual(a value.Value, b value.Value) bool {
 
 func printObject(val value.Value) {
 	switch OBJ_TYPE(val) {
+	case object.OBJ_CLOSURE:
+		object.PrintFunction(AS_CLOSURE(val).Function)
 	case object.OBJ_FUNCTION:
 		object.PrintFunction(AS_FUNCTION(val))
 	case object.OBJ_NATIVE:
