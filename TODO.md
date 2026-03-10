@@ -1,4 +1,6 @@
 ## NEXT
+[ ] addUpvalue() dedup multiple reference of same variable
+    - golang range syntax
 
 ## TODO
-[ ] modernize hashString() in object.go (using range)
+[ ] increase go version in go.mod

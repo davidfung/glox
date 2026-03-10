@@ -101,7 +101,9 @@ If we add the same values twice in the constant pool, it will occupies two slots
 
 Lox, like many programming languages, stores local variables in the stack.
 
-The locals array in the compiler struct has the exact same layout  as the VM's stack at runtime.  The variable's index in the locals array is the same as its stack slot.  How convenient.
+The locals array in the compiler struct has the exact same layout as the VM's stack at runtime.  The variable's index in the locals array is the same as its stack slot.  We use the Local array just to find the local variable by name, and the index in the Local array *is* the stack slot!
+
+The stack stores only Values.  So in order to push anything into the stack, we must package it into a value first.  On the other hand, you can only pop Values off the stack.
 
 ## Testing
 
@@ -126,6 +128,8 @@ When reading code, always keep in mind whether it is executing at compile time o
 
 Our VM represents functions at runtime using ObjFunction. These objects are created by the front end during compilation. At runtime, all the VM does is load the function object from a constant table and bind it to a name. There is no operation to “create” a function at runtime. Much like string and number literals, they are constants instantiated purely at compile time. That made sense because all of the data that composes a function is known at compile time: the chunk of bytecode compiled from the function’s body, and the constants used in the body. Once we introduce closures, though, that representation is no longer sufficient.
 
+After the introduction of closure, we wrap all functions in ObjClosures and the runtime will never try yo invoke a bare ObjFunction anymore.  ObjFunctions live only in constant tables and get immediately wrapped in closures before anything else sees them.
+
 ## Native Functions
 
 A programming language implementation reaches out and touches the material world through native functions.
@@ -135,5 +139,19 @@ At the language level, Lox is fairly complete—it’s got closures, classes, in
 Native functions are different from Lox functions. When they are called, they don’t push a CallFrame, because there’s no bytecode code for that frame to point to. They have no bytecode chunk. Instead, they somehow reference a piece of native C code.
 
 Without something like a foreign function interface, users can’t define their own native functions. That’s our job as VM implementers. Glox defineNative() is the foreign function interface.
+
+## Closure
+
+Without closure, our existing instructions for reading and writing local variables are limited to a single function’s stack window. Locals from a surrounding function are outside of the inner function’s window. We’re going to need some new instructions.
+
+The easiest approach might be an instruction that takes a relative stack slot offset that can reach before the current function’s window. That would work if closed-over variables were always on the stack. But as we saw earlier, these variables sometimes outlive the function where they are declared. That means they won’t always be on the stack.
+
+The next easiest approach, then, would be to take any local variable that gets closed over and have it always live on the heap. When the local variable declaration in the surrounding function is executed, the VM would allocate memory for it dynamically. That way it could live as long as needed.
+
+This would be a fine approach if clox didn’t have a single-pass compiler. But that restriction we chose in our implementation makes things harder. 
+
+Fortunately, thanks to the Lua dev team, we have a solution. We use a level of indirection that they call an upvalue. An upvalue refers to a local variable in an enclosing function. Every closure maintains an array of upvalues, one for each surrounding local variable that the closure uses.
+
+The upvalue points back into the stack to where the variable it captured lives. When the closure needs to access a closed-over variable, it goes through the corresponding upvalue to reach it. When a function declaration is first executed and we create a closure for it, the VM creates the array of upvalues and wires them up to “capture” the surrounding local variables that the closure needs.
 
 ## End

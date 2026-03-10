@@ -27,9 +27,10 @@ type ObjClosure struct {
 }
 
 type ObjFunction struct {
-	Arity int
-	Chun  chunk.Chunk
-	Name  ObjString
+	Arity        int
+	UpvalueCount int
+	Chun         chunk.Chunk
+	Name         ObjString
 }
 
 type NativeFn func(argCount int, args []value.Value) value.Value
@@ -82,8 +83,9 @@ func NewClosure(function ObjFunction) ObjClosure {
 
 func NewFunction() ObjFunction {
 	fn := new(ObjFunction)
-	fn.Arity = 0 // actually not necessary in glox
-	fn.Name = "" // actually not necessary in glox
+	fn.Arity = 0        // actually not necessary in glox
+	fn.UpvalueCount = 0 // actually not necessary in glox
+	fn.Name = ""        // actually not necessary in glox
 	chunk.InitChunk(&fn.Chun)
 	return *fn
 }

@@ -51,6 +51,11 @@ type Local struct {
 	depth int
 }
 
+type Upvalue struct {
+	index   uint8
+	isLocal bool
+}
+
 type FunctionType int
 
 const (
@@ -73,6 +78,7 @@ type Compiler struct {
 
 	locals     [common.UINT8_COUNT]Local
 	localCount int
+	upvalues   [common.UINT8_COUNT]Upvalue
 	scopeDepth int
 }
 
@@ -388,7 +394,16 @@ func function(type_ FunctionType) {
 
 	function := endCompiler()
 	obj := object.Obj{Type_: object.OBJ_FUNCTION, Val: function}
-	emitBytes(chunk.OP_CONSTANT, makeConstant(objval.OBJ_VAL(obj)))
+	emitBytes(chunk.OP_CLOSURE, makeConstant(objval.OBJ_VAL(obj)))
+
+	for i := range function.UpvalueCount {
+		if compiler.upvalues[i].isLocal {
+			emitByte(uint8(1))
+		} else {
+			emitByte(uint8(0))
+		}
+		emitByte(compiler.upvalues[i].index)
+	}
 }
 
 func funDeclaration() {
@@ -621,6 +636,9 @@ func namedVariable(token scanner.Token, canAssign bool) {
 	if arg != (-1) {
 		getOp = chunk.OP_GET_LOCAL
 		setOp = chunk.OP_SET_LOCAL
+	} else if arg = resolveUpvalue(current, &token); arg != -1 {
+		getOp = chunk.OP_GET_UPVALUE
+		setOp = chunk.OP_SET_UPVALUE
 	} else {
 		arg = int(identifierConstant(token))
 		getOp = chunk.OP_GET_GLOBAL
@@ -724,6 +742,58 @@ func resolveLocal(compiler *Compiler, name *scanner.Token) int {
 			return i
 		}
 	}
+	return -1
+}
+
+// The compiler keeps an array of upvalue structures to track the closed-over
+// identifiers that it has resolved in the body of each function. Remember
+// how the compiler’s Local array mirrors the stack slot indexes where locals
+// live at runtime? This new upvalue array works the same way. The indexes in
+// the compiler’s array match the indexes where upvalues will live in the
+// ObjClosure at runtime.
+//
+// This function adds a new upvalue to that array. The index field tracks the
+// closed-over local variable’s slot index. That way the compiler knows which
+// variable in the enclosing function needs to be captured.
+func addUpValue(compiler *Compiler, index uint8, isLocal bool) int {
+	upvalueCount := compiler.function.UpvalueCount
+
+	for i := range upvalueCount {
+		upvalue := compiler.upvalues[i]
+		if upvalue.index == index && upvalue.isLocal == isLocal {
+			return i
+		}
+	}
+
+	if upvalueCount == common.UINT8_COUNT {
+		error("Too many closure variables in function.")
+	}
+
+	compiler.upvalues[upvalueCount].isLocal = isLocal
+	compiler.upvalues[upvalueCount].index = index
+	compiler.function.UpvalueCount++
+	return upvalueCount
+}
+
+// This function looks for a local variable declared in any of the
+// surrounding functions. If it finds one, it returns an “upvalue index”
+// for that variable.  Otherwise, it returns -1 to indicate the variable
+// wasn’t found.
+func resolveUpvalue(compiler *Compiler, name *scanner.Token) int {
+	if compiler.enclosing == nil {
+		return -1
+	}
+
+	local := resolveLocal(compiler.enclosing, name)
+	if local != -1 {
+		return addUpValue(compiler, uint8(local), true)
+	}
+
+	upvalue := resolveUpvalue(compiler.enclosing, name)
+	if upvalue != -1 {
+		return addUpValue(compiler, uint8(upvalue), false)
+	}
+
 	return -1
 }
 

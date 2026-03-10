@@ -55,6 +55,10 @@ func DisassembleInstruction(chun *chunk.Chunk, offset int) int {
 		return constantInstruction("OP_DEFINE_GLOBAL", chun, offset)
 	case chunk.OP_SET_GLOBAL:
 		return constantInstruction("OP_SET_GLOBAL", chun, offset)
+	case chunk.OP_GET_UPVALUE:
+		return byteInstruction("OP_GET_UPVALUE", chun, offset)
+	case chunk.OP_SET_UPVALUE:
+		return byteInstruction("OP_SET_UPVALUE", chun, offset)
 	case chunk.OP_EQUAL:
 		return simpleInstruction("OP_EQUAL", offset)
 	case chunk.OP_GREATER:
@@ -83,6 +87,30 @@ func DisassembleInstruction(chun *chunk.Chunk, offset int) int {
 		return jumpInstruction("OP_LOOP", -1, chun, offset)
 	case chunk.OP_CALL:
 		return byteInstruction("OP_CALL", chun, offset)
+	case chunk.OP_CLOSURE:
+		offset++
+		constant := chun.Code[offset]
+		offset++
+		fmt.Printf("%-16s %4d ", "OP_CLOSURE", constant)
+		objval.PrintValue(chun.Constants.Values[constant])
+		fmt.Printf("\n")
+
+		function := objval.AS_FUNCTION(chun.Constants.Values[constant])
+		for range function.UpvalueCount {
+			isLocal := chun.Code[offset]
+			offset++
+			index := chun.Code[offset]
+			offset++
+			kind := ""
+			if isLocal == 1 {
+				kind = "local"
+			} else {
+				kind = "upvalue"
+			}
+			fmt.Printf("%04d      |                     %s %d\n", offset-2, kind, index)
+		}
+
+		return offset
 	case chunk.OP_RETURN:
 		return simpleInstruction("OP_RETURN", offset)
 	default:

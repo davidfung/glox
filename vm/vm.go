@@ -27,9 +27,9 @@ type VM struct {
 }
 
 type CallFrame struct {
-	function object.ObjFunction
-	ip       int
-	slots    []value.Value
+	closure object.ObjClosure
+	ip      int
+	slots   []value.Value
 }
 
 type InterpretResult int
@@ -89,7 +89,7 @@ func runtimeError(format string, args ...any) {
 	// stack trace
 	for i := vm.frameCount - 1; i >= 0; i-- {
 		frame := &vm.frames[i]
-		function := frame.function
+		function := frame.closure.Function
 		instruction := frame.ip - 1
 		fmt.Fprintf(os.Stderr, "[line %d] in ", function.Chun.Lines[instruction])
 		if function.Name == "" {
@@ -134,9 +134,9 @@ func peek(distance int) value.Value {
 	return vm.stack[vm.stackTop-1-distance]
 }
 
-func call(function object.ObjFunction, argCount uint) bool {
-	if argCount != uint(function.Arity) {
-		runtimeError("Expected %d arguments but got %d", function.Arity, argCount)
+func call(closure object.ObjClosure, argCount uint) bool {
+	if argCount != uint(closure.Function.Arity) {
+		runtimeError("Expected %d arguments but got %d", closure.Function.Arity, argCount)
 		return false
 	}
 
@@ -147,7 +147,7 @@ func call(function object.ObjFunction, argCount uint) bool {
 
 	frame := &vm.frames[vm.frameCount]
 	vm.frameCount++
-	frame.function = function
+	frame.closure = closure
 	frame.ip = 0
 	// frame.slots = uint(vm.stackTop) - uint(argCount) - 1
 	frame.slots = vm.stack[vm.stackTop-int(argCount)-1:]
@@ -157,8 +157,8 @@ func call(function object.ObjFunction, argCount uint) bool {
 func callValue(callee value.Value, argCount uint) bool {
 	if objval.IS_OBJ(callee) {
 		switch objval.OBJ_TYPE(callee) {
-		case object.OBJ_FUNCTION:
-			return call(objval.AS_FUNCTION(callee), argCount)
+		case object.OBJ_CLOSURE:
+			return call(objval.AS_CLOSURE(callee), argCount)
 		case object.OBJ_NATIVE:
 			native := objval.AS_NATIVE(callee)
 			result := native(int(argCount), vm.stack[vm.stackTop-int(argCount):])
@@ -217,10 +217,16 @@ func Interpret(source *string) InterpretResult {
 		return INTERPRET_COMPILE_ERROR
 	}
 
-	obj := object.Obj{Type_: object.OBJ_FUNCTION, Val: function}
+	// obj := object.Obj{Type_: object.OBJ_FUNCTION, Val: function}
+	// val := objval.OBJ_VAL(obj)
+	// push(val)
+	// call(function, 0)
+
+	closure := object.NewClosure(function)
+	obj := object.Obj{Type_: object.OBJ_CLOSURE, Val: closure}
 	val := objval.OBJ_VAL(obj)
 	push(val)
-	call(function, 0)
+	call(closure, 0)
 
 	return run()
 }
@@ -231,19 +237,19 @@ func run() InterpretResult {
 	var frame *CallFrame = &vm.frames[vm.frameCount-1]
 
 	readByte := func() uint8 {
-		instruction := frame.function.Chun.Code[frame.ip]
+		instruction := frame.closure.Function.Chun.Code[frame.ip]
 		frame.ip++
 		return instruction
 	}
 
 	readShort := func() uint16 {
 		frame.ip += 2
-		var x uint16 = (uint16(frame.function.Chun.Code[frame.ip-2]) << 8) | uint16((frame.function.Chun.Code[frame.ip-1]))
+		var x uint16 = (uint16(frame.closure.Function.Chun.Code[frame.ip-2]) << 8) | uint16((frame.closure.Function.Chun.Code[frame.ip-1]))
 		return x
 	}
 
 	readConstant := func() value.Value {
-		return frame.function.Chun.Constants.Values[readByte()]
+		return frame.closure.Function.Chun.Constants.Values[readByte()]
 	}
 
 	readString := func() object.ObjString {
@@ -259,7 +265,7 @@ func run() InterpretResult {
 				fmt.Printf("]")
 			}
 			fmt.Printf("\n")
-			debugger.DisassembleInstruction(&frame.function.Chun, int(frame.ip))
+			debugger.DisassembleInstruction(&frame.closure.Function.Chun, int(frame.ip))
 		}
 
 		instruction := chunk.OpCode(readByte())
@@ -382,6 +388,11 @@ func run() InterpretResult {
 				return INTERPRET_RUNTIME_ERROR
 			}
 			frame = &vm.frames[vm.frameCount-1]
+		case chunk.OP_CLOSURE:
+			objFn := objval.AS_FUNCTION(readConstant())
+			objClosure := object.NewClosure(objFn)
+			obj := object.Obj{Type_: object.OBJ_CLOSURE, Val: objClosure}
+			push(objval.OBJ_VAL(obj))
 		case chunk.OP_RETURN:
 			result := pop()
 			vm.frameCount--
@@ -390,7 +401,7 @@ func run() InterpretResult {
 				return INTERPRET_OK
 			}
 			// vm.stackTop = frame->slots // clox
-			vm.stackTop = vm.stackTop - frame.function.Arity - 1 // discard the parameters and the function object
+			vm.stackTop = vm.stackTop - frame.closure.Function.Arity - 1 // discard the parameters and the function object
 			push(result)
 			frame = &vm.frames[vm.frameCount-1]
 		}
