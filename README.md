@@ -30,6 +30,10 @@ Many comments in the code are taken directly from the book Crafting Interpreters
 
 Although some mechanics required by C is not necessary in Go, we still choose to implement some of them as a programming exercise as well as to mirror the struct of clox as much as reasonable.
 
+## Memory Management
+
+Since Go has a garbage collector, all Lox memory management code (including memory.c) are not necessary.
+
 ## Pratt Parser
 
 In the C code, use forward declaration to handle a declaration cycle in the Pratt Parser.  In Go, use an init() to fix the invalid initialization cycle:

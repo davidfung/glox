@@ -15,6 +15,7 @@ const (
 	OBJ_FUNCTION
 	OBJ_NATIVE
 	OBJ_STRING
+	OBJ_UPVALUE
 )
 
 type Obj struct {

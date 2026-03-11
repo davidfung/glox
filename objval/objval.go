@@ -11,6 +11,10 @@ import (
 	"github.com/davidfung/glox/value"
 )
 
+type ObjUpvalue struct {
+	Location *value.Value
+}
+
 func BOOL_VAL(b bool) value.Value {
 	return value.Value{Type_: value.VAL_BOOL, Val: b}
 }
@@ -186,5 +190,13 @@ func printObject(val value.Value) {
 		fmt.Printf("<native fn>") // can we also print the native function name?
 	case object.OBJ_STRING:
 		fmt.Printf("%s", AS_STRING(val))
+	case object.OBJ_UPVALUE:
+		fmt.Printf("upvalue")
 	}
+}
+
+func NewUpvalue(slot *value.Value) *ObjUpvalue {
+	upvalue := new(ObjUpvalue)
+	upvalue.Location = slot
+	return upvalue
 }
