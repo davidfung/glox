@@ -11,6 +11,12 @@ import (
 	"github.com/davidfung/glox/value"
 )
 
+type ObjClosure struct {
+	Function     object.ObjFunction
+	Upvalues     []*ObjUpvalue
+	UpvalueCount int
+}
+
 type ObjUpvalue struct {
 	Location *value.Value
 }
@@ -75,12 +81,12 @@ func AS_OBJ(v value.Value) object.Obj {
 	return obj
 }
 
-func AS_CLOSURE(v value.Value) object.ObjClosure {
+func AS_CLOSURE(v value.Value) *ObjClosure {
 	obj, ok := v.Val.(object.Obj)
 	if !ok {
 		panic("Error: AS_CLOSURE() expects an object in a value.Value")
 	}
-	objClosure, ok := obj.Val.(object.ObjClosure)
+	objClosure, ok := obj.Val.(*ObjClosure)
 	if !ok {
 		panic("Error: AS_CLOSURE() expects a closure object")
 	}
@@ -193,6 +199,18 @@ func printObject(val value.Value) {
 	case object.OBJ_UPVALUE:
 		fmt.Printf("upvalue")
 	}
+}
+
+func NewClosure(function object.ObjFunction) *ObjClosure {
+	var upvalues []*ObjUpvalue
+	for i := 0; i < function.UpvalueCount; i++ {
+		upvalues = append(upvalues, nil)
+	}
+	closure := new(ObjClosure)
+	closure.Function = function
+	closure.Upvalues = upvalues
+	closure.UpvalueCount = function.UpvalueCount
+	return closure
 }
 
 func NewUpvalue(slot *value.Value) *ObjUpvalue {

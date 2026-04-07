@@ -25,6 +25,29 @@ func TestScripts(t *testing.T) {
 func initTestTable() []tests {
 	var tests = []tests{
 		{`
+		fun outer() {
+			var x = "outside";
+			fun inner() {
+				print x;
+			}
+			inner();
+		}
+		outer();
+		`, INTERPRET_OK},
+		{`
+		fun outer() {
+			var x = "outside";
+			fun middle() {
+				fun inner() {
+					print x;
+				}
+				inner();
+			}
+			middle();
+		}
+		outer();
+		`, INTERPRET_OK},
+		{`
 		fun fib(n) {
   			if (n < 2) return n;
   			return fib(n - 2) + fib(n - 1);

@@ -119,6 +119,7 @@ The following is the most common bugs:
   - missing statement
   - incorrect equality test
   - confusion in object and value conversion
+  - forget to initialize a slot
 
 If I have to do it again, I will not translate the C code literally to Go, but just the concept.  For example, avoid using pointers.
 
@@ -157,5 +158,7 @@ This would be a fine approach if clox didn’t have a single-pass compiler. But 
 Fortunately, thanks to the Lua dev team, we have a solution. We use a level of indirection that they call an upvalue. An upvalue refers to a local variable in an enclosing function. Every closure maintains an array of upvalues, one for each surrounding local variable that the closure uses.
 
 The upvalue points back into the stack to where the variable it captured lives. When the closure needs to access a closed-over variable, it goes through the corresponding upvalue to reach it. When a function declaration is first executed and we create a closure for it, the VM creates the array of upvalues and wires them up to “capture” the surrounding local variables that the closure needs.
+
+Closures capture variables. You can think of them as capturing the place the value lives. This is important to keep in mind as we deal with closed-over variables that are no longer on the stack. When a variable moves to the heap, we need to ensure that all closures capturing that variable retain a reference to its one new location. That way, when the variable is mutated, all closures see the change.
 
 ## End

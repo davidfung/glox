@@ -23,10 +23,6 @@ type Obj struct {
 	Val   any
 }
 
-type ObjClosure struct {
-	Function ObjFunction
-}
-
 type ObjFunction struct {
 	Arity        int
 	UpvalueCount int
@@ -74,12 +70,6 @@ func hashString(s string, length int) uint32 {
 		hash *= 16777619
 	}
 	return hash
-}
-
-func NewClosure(function ObjFunction) ObjClosure {
-	closure := new(ObjClosure)
-	closure.Function = function
-	return *closure
 }
 
 func NewFunction() ObjFunction {

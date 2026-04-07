@@ -27,7 +27,7 @@ type VM struct {
 }
 
 type CallFrame struct {
-	closure object.ObjClosure
+	closure objval.ObjClosure
 	ip      int
 	slots   []value.Value
 }
@@ -134,7 +134,7 @@ func peek(distance int) value.Value {
 	return vm.stack[vm.stackTop-1-distance]
 }
 
-func call(closure object.ObjClosure, argCount uint) bool {
+func call(closure *objval.ObjClosure, argCount uint) bool {
 	if argCount != uint(closure.Function.Arity) {
 		runtimeError("Expected %d arguments but got %d", closure.Function.Arity, argCount)
 		return false
@@ -147,7 +147,7 @@ func call(closure object.ObjClosure, argCount uint) bool {
 
 	frame := &vm.frames[vm.frameCount]
 	vm.frameCount++
-	frame.closure = closure
+	frame.closure = *closure
 	frame.ip = 0
 	// frame.slots = uint(vm.stackTop) - uint(argCount) - 1
 	frame.slots = vm.stack[vm.stackTop-int(argCount)-1:]
@@ -171,6 +171,10 @@ func callValue(callee value.Value, argCount uint) bool {
 	}
 	runtimeError(("Can only call functions and classes."))
 	return false
+}
+func captureUpvalue(local *value.Value) *objval.ObjUpvalue {
+	createdUpvalue := objval.NewUpvalue(local)
+	return createdUpvalue
 }
 
 func isFalsey(val value.Value) bool {
@@ -222,7 +226,7 @@ func Interpret(source *string) InterpretResult {
 	// push(val)
 	// call(function, 0)
 
-	closure := object.NewClosure(function)
+	closure := objval.NewClosure(function)
 	obj := object.Obj{Type_: object.OBJ_CLOSURE, Val: closure}
 	val := objval.OBJ_VAL(obj)
 	push(val)
@@ -318,6 +322,12 @@ func run() InterpretResult {
 				runtimeError("Undefined variable '%s'.", name)
 				return INTERPRET_RUNTIME_ERROR
 			}
+		case chunk.OP_GET_UPVALUE:
+			slot := readByte()
+			push(*frame.closure.Upvalues[slot].Location)
+		case chunk.OP_SET_UPVALUE:
+			slot := readByte()
+			*frame.closure.Upvalues[slot].Location = peek(0)
 		case chunk.OP_EQUAL:
 			a := pop()
 			b := pop()
@@ -390,9 +400,18 @@ func run() InterpretResult {
 			frame = &vm.frames[vm.frameCount-1]
 		case chunk.OP_CLOSURE:
 			objFn := objval.AS_FUNCTION(readConstant())
-			objClosure := object.NewClosure(objFn)
+			objClosure := objval.NewClosure(objFn)
 			obj := object.Obj{Type_: object.OBJ_CLOSURE, Val: objClosure}
 			push(objval.OBJ_VAL(obj))
+			for i := 0; i < objClosure.UpvalueCount; i++ {
+				isLocal := readByte()
+				index := readByte()
+				if isLocal == 1 {
+					objClosure.Upvalues[i] = captureUpvalue(&frame.slots[index])
+				} else {
+					objClosure.Upvalues[i] = frame.closure.Upvalues[index]
+				}
+			}
 		case chunk.OP_RETURN:
 			result := pop()
 			vm.frameCount--
