@@ -7,8 +7,8 @@ import (
 	"github.com/davidfung/glox/objval"
 )
 
-const DEBUG_PRINT_CODE = false
-const DEBUG_TRACE_EXECUTION = false
+const DEBUG_PRINT_CODE = true
+const DEBUG_TRACE_EXECUTION = true
 
 func DisassembleChunk(chun *chunk.Chunk, name string) {
 	fmt.Printf("== %s ==\n", name)

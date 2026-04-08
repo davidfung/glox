@@ -59,7 +59,11 @@ func PrintObjectType(obj Obj) {
 }
 
 func PrintFunction(function ObjFunction) {
-	fmt.Printf("<fn %s>", function.Name)
+	if function.Name == "" {
+		fmt.Printf("<script>")
+	} else {
+		fmt.Printf("<fn %s>", function.Name)
+	}
 }
 
 // FNV-1a hash algorithm
