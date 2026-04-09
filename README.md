@@ -161,4 +161,6 @@ The upvalue points back into the stack to where the variable it captured lives. 
 
 Closures capture variables. You can think of them as capturing the place the value lives. This is important to keep in mind as we deal with closed-over variables that are no longer on the stack. When a variable moves to the heap, we need to ensure that all closures capturing that variable retain a reference to its one new location. That way, when the variable is mutated, all closures see the change.
 
+Important! Even if we do not implement Chapter 25.4 Closed Upvalues, closed upvalues still work probably because Go compiler escape analysis already move them to the heap.  So implementing 25.4 is purely academic.
+
 ## End
