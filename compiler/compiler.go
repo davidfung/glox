@@ -47,8 +47,9 @@ type ParseRule struct {
 }
 
 type Local struct {
-	name  scanner.Token
-	depth int
+	name       scanner.Token
+	depth      int
+	isCaptured bool
 }
 
 type Upvalue struct {
@@ -247,6 +248,7 @@ func initCompiler(compiler *Compiler, type_ FunctionType) {
 	local = current.locals[current.localCount]
 	current.localCount++
 	local.depth = 0
+	local.isCaptured = false
 	local.name.Start = 0
 	local.name.Length = 0
 }
@@ -280,7 +282,11 @@ func endScope() {
 	// to pop them from the stack.
 	for current.localCount > 0 &&
 		current.locals[current.localCount-1].depth > current.scopeDepth {
-		emitByte(chunk.OP_POP)
+		if current.locals[current.localCount-1].isCaptured {
+			emitByte(chunk.OP_CLOSE_UPVALUE)
+		} else {
+			emitByte(chunk.OP_POP)
+		}
 		current.localCount--
 	}
 }
@@ -786,6 +792,7 @@ func resolveUpvalue(compiler *Compiler, name *scanner.Token) int {
 
 	local := resolveLocal(compiler.enclosing, name)
 	if local != -1 {
+		compiler.enclosing.locals[local].isCaptured = true
 		return addUpValue(compiler, uint8(local), true)
 	}
 
@@ -810,6 +817,7 @@ func addLocal(name scanner.Token) {
 	current.localCount++
 	local.name = name
 	local.depth = current.scopeDepth
+	local.isCaptured = false
 }
 
 // The function declareVariable() is where the compiler records

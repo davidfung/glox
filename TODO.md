@@ -1,6 +1,5 @@
 ## NEXT
 [ ] 25.4 Closed Upvalues
-[ ] Next: why it already work???
 [ ] add def to vm test suite
 
 ## TODO

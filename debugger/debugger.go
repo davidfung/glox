@@ -111,6 +111,8 @@ func DisassembleInstruction(chun *chunk.Chunk, offset int) int {
 		}
 
 		return offset
+	case chunk.OP_CLOSE_UPVALUE:
+		return simpleInstruction("OP_CLOSE_UPVALUE", offset)
 	case chunk.OP_RETURN:
 		return simpleInstruction("OP_RETURN", offset)
 	default:
