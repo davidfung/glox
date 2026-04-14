@@ -19,11 +19,12 @@ const FRAMES_MAX = 64
 const STACK_MAX = (FRAMES_MAX * common.UINT8_COUNT)
 
 type VM struct {
-	frames     [FRAMES_MAX]CallFrame
-	frameCount int
-	stack      [STACK_MAX]value.Value
-	stackTop   int
-	globals    table.Table
+	frames       [FRAMES_MAX]CallFrame
+	frameCount   int
+	stack        [STACK_MAX]value.Value
+	stackTop     int
+	globals      table.Table
+	openUpvalues *objval.ObjUpvalue
 }
 
 type CallFrame struct {
@@ -80,6 +81,7 @@ func fibNative(argCount int, args []value.Value) value.Value {
 func resetStack() {
 	vm.stackTop = 0
 	vm.frameCount = 0
+	vm.openUpvalues = nil
 }
 
 func runtimeError(format string, args ...any) {
@@ -173,7 +175,36 @@ func callValue(callee value.Value, argCount uint) bool {
 	return false
 }
 func captureUpvalue(local *value.Value) *objval.ObjUpvalue {
+	var prevUpvalue *objval.ObjUpvalue = nil
+	upvalue := vm.openUpvalues
+	// for upvalue != nil && upvalue.Location > local {
+	// 	prevUpvalue = upvalue
+	// 	upvalue = upvalue.Next
+	// }
+
+	for upvalue != nil {
+		s1 := fmt.Sprintf("%p", upvalue.Location)
+		s2 := fmt.Sprintf("%p", local)
+		fmt.Printf("S1=%s, s2=%s\n", s1, s2)
+		if s1 <= s2 {
+			break
+		}
+		prevUpvalue = upvalue
+		upvalue = upvalue.Next
+	}
+
+	if upvalue != nil && upvalue.Location == local {
+		return upvalue
+	}
+
 	createdUpvalue := objval.NewUpvalue(local)
+
+	if prevUpvalue == nil {
+		vm.openUpvalues = createdUpvalue
+	} else {
+		prevUpvalue.Next = createdUpvalue
+	}
+
 	return createdUpvalue
 }
 

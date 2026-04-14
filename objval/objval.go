@@ -19,6 +19,7 @@ type ObjClosure struct {
 
 type ObjUpvalue struct {
 	Location *value.Value
+	Next     *ObjUpvalue
 }
 
 func BOOL_VAL(b bool) value.Value {
@@ -216,5 +217,6 @@ func NewClosure(function object.ObjFunction) *ObjClosure {
 func NewUpvalue(slot *value.Value) *ObjUpvalue {
 	upvalue := new(ObjUpvalue)
 	upvalue.Location = slot
+	upvalue.Next = nil
 	return upvalue
 }
