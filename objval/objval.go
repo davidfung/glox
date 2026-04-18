@@ -19,6 +19,7 @@ type ObjClosure struct {
 
 type ObjUpvalue struct {
 	Location *value.Value
+	Closed   value.Value
 	Next     *ObjUpvalue
 }
 
@@ -216,6 +217,7 @@ func NewClosure(function object.ObjFunction) *ObjClosure {
 
 func NewUpvalue(slot *value.Value) *ObjUpvalue {
 	upvalue := new(ObjUpvalue)
+	upvalue.Closed = NIL_VAL()
 	upvalue.Location = slot
 	upvalue.Next = nil
 	return upvalue

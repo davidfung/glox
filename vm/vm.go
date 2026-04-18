@@ -208,6 +208,20 @@ func captureUpvalue(local *value.Value) *objval.ObjUpvalue {
 	return createdUpvalue
 }
 
+func closeUpvalues(last *value.Value) {
+	for vm.openUpvalues != nil {
+		s1 := fmt.Sprintf("%p", vm.openUpvalues.Location)
+		s2 := fmt.Sprintf("%p", last)
+		if s1 < s2 {
+			break
+		}
+		upvalue := vm.openUpvalues
+		upvalue.Closed = *upvalue.Location
+		upvalue.Location = &upvalue.Closed
+		vm.openUpvalues = upvalue.Next
+	}
+}
+
 func isFalsey(val value.Value) bool {
 	return objval.IS_NIL(val) || objval.IS_BOOL(val) && !objval.AS_BOOL(val)
 }
@@ -443,8 +457,12 @@ func run() InterpretResult {
 					objClosure.Upvalues[i] = frame.closure.Upvalues[index]
 				}
 			}
+		case chunk.OP_CLOSE_UPVALUE:
+			closeUpvalues(&vm.stack[vm.stackTop-1])
+			pop()
 		case chunk.OP_RETURN:
 			result := pop()
+			closeUpvalues(&frame.slots[0])
 			vm.frameCount--
 			if vm.frameCount == 0 {
 				pop()

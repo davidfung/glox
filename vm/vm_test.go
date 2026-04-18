@@ -26,6 +26,36 @@ func initTestTable() []tests {
 	var tests = []tests{
 		{`
 		fun outer() {
+			var x = "value";
+			fun middle() {
+				fun inner() {
+				print x;
+				}
+				print "create inner closure";
+				return inner;
+			}
+			print "return from outer";
+			return middle;
+		}
+		var mid = outer();
+		var in = mid();
+		in();
+		`, INTERPRET_OK},
+		{`
+		fun outer() {
+			{
+				var x = "outside";
+				fun inner() {
+				print x;
+				}
+				return inner;
+			}
+		}
+		var closure = outer();
+		closure();
+		 `, INTERPRET_OK},
+		{`
+		fun outer() {
 			var x = "outside";
 			fun inner() {
 				print x;
