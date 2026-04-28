@@ -412,6 +412,18 @@ func function(type_ FunctionType) {
 	}
 }
 
+func classDeclaration() {
+	consume(scanner.TOKEN_IDENTIFIER, "Expect class name.")
+	nameConstant := identifierConstant(parser.previous)
+	declareVariable()
+
+	emitBytes(chunk.OP_CLASS, nameConstant)
+	defineVariable(nameConstant)
+
+	consume(scanner.TOKEN_LEFT_BRACE, "Expect '{' before class body.")
+	consume(scanner.TOKEN_RIGHT_BRACE, "Expect '}' after class body.")
+}
+
 func funDeclaration() {
 	global := parseVariable("Expect function name.")
 	markInitialized()
@@ -575,7 +587,9 @@ func synchronize() {
 }
 
 func declaration() {
-	if match(scanner.TOKEN_FUN) {
+	if match(scanner.TOKEN_CLASS) {
+		classDeclaration()
+	} else if match(scanner.TOKEN_FUN) {
 		funDeclaration()
 	} else if match(scanner.TOKEN_VAR) {
 		varDeclaration()

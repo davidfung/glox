@@ -472,6 +472,10 @@ func run() InterpretResult {
 			vm.stackTop = vm.stackTop - frame.closure.Function.Arity - 1 // discard the parameters and the function object
 			push(result)
 			frame = &vm.frames[vm.frameCount-1]
+		case chunk.OP_CLASS:
+			klass := objval.NewClass(readString())
+			obj := object.Obj{Type_: object.OBJ_CLASS, Val: klass}
+			push(objval.OBJ_VAL(obj))
 		}
 	}
 }

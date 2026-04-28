@@ -25,6 +25,10 @@ func TestScripts(t *testing.T) {
 func initTestTable() []tests {
 	var tests = []tests{
 		{`
+		class Brioche {}
+		print Brioche;
+		`, INTERPRET_OK},
+		{`
 		fun outer() {
 			var x = "value";
 			fun middle() {
