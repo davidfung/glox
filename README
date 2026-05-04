@@ -109,6 +109,7 @@ The stack stores only Values.  So in order to push anything into the stack, we m
 ## Testing
 
 Since Lox does not have error handling construct, most of the testings are just running valid Lox scripts (vm_test.go) to see if they crash without checking their output.
+TODO: append "_test" to test package name going forward.
 
 ## Troubleshooting
 
