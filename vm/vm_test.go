@@ -26,6 +26,10 @@ func initTestTable() []tests {
 	var tests = []tests{
 		{`
 		class Brioche {}
+		print Brioche();
+		`, INTERPRET_OK},
+		{`
+		class Brioche {}
 		print Brioche;
 		`, INTERPRET_OK},
 		{`

@@ -8,11 +8,17 @@ import (
 	"fmt"
 
 	"github.com/davidfung/glox/object"
+	"github.com/davidfung/glox/table"
 	"github.com/davidfung/glox/value"
 )
 
 type ObjClass struct {
 	Name object.ObjString
+}
+
+type ObjInstance struct {
+	Klass  *ObjClass
+	Fields table.Table
 }
 
 type ObjClosure struct {
@@ -71,6 +77,10 @@ func IS_FUNCTION(v value.Value) bool {
 	return IsObjType(v, object.OBJ_FUNCTION)
 }
 
+func IS_INSTANCE(v value.Value) bool {
+	return IsObjType(v, object.OBJ_INSTANCE)
+}
+
 func IS_NATIVE(v value.Value) bool {
 	return IsObjType(v, object.OBJ_NATIVE)
 }
@@ -125,6 +135,18 @@ func AS_FUNCTION(v value.Value) object.ObjFunction {
 		panic("Error: AS_FUNCTION() expects a function object")
 	}
 	return objFunction
+}
+
+func AS_INSTANCE(v value.Value) ObjInstance {
+	obj, ok := v.Val.(object.Obj)
+	if !ok {
+		panic("Error: AS_INSTANCE() expects an object in a value.Value")
+	}
+	objInstance, ok := obj.Val.(*ObjInstance)
+	if !ok {
+		panic("Error: AS_INSTANCE() expects an instance object")
+	}
+	return *objInstance
 }
 
 func AS_NATIVE(v value.Value) object.NativeFn {
@@ -216,6 +238,8 @@ func printObject(val value.Value) {
 		object.PrintFunction(AS_CLOSURE(val).Function)
 	case object.OBJ_FUNCTION:
 		object.PrintFunction(AS_FUNCTION(val))
+	case object.OBJ_INSTANCE:
+		fmt.Printf("%s instance", AS_INSTANCE(val).Klass.Name)
 	case object.OBJ_NATIVE:
 		fmt.Printf("<native fn>") // can we also print the native function name?
 	case object.OBJ_STRING:
@@ -249,4 +273,11 @@ func NewUpvalue(slot *value.Value) *ObjUpvalue {
 	upvalue.Location = slot
 	upvalue.Next = nil
 	return upvalue
+}
+
+func NewInstance(klass *ObjClass) *ObjInstance {
+	instance := new(ObjInstance)
+	instance.Klass = klass
+	table.InitTable(&instance.Fields)
+	return instance
 }

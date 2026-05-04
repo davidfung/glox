@@ -40,10 +40,6 @@ In the C code, use forward declaration to handle a declaration cycle in the Prat
 
 Package level variable "rules" depends on binary() in initialication, binary() depends on getRules(), which depends on "rules".
 
-## Tagged Union
-
-There are two ways to implement a tagged union in Go.  Either use a struct (higher performance?) or an interface (more space efficient).  I picked interface because the implementation is more interesting.
-
 ## Chunk OpCode
 
 In order to add a type to the chunk opcode structure, will need to create a type interface and use type constraint in other functions such as writeByte() and writeBytes(), because the parameters that they take can be an opCode or a data byte (uint8).
@@ -73,21 +69,22 @@ Like tagged union, we use interface to implement struct inheritance in clox.
 ## Object & Value
 
 An object is a struct with 2 fields representing its type and its object value.  
-ObjFunction is a struct which has its own chunk of code.
-ObjString is an alias to string in glox.
-ObjNative is an alias to NativeFn
 
 structure Object {
-  type // ObjFunction or ObjString
-  value
+  type  // ObjFunction, ObjString, etc
+  value // any
 }
 
 A value is a struct with 2 fields representing its type and value.  The value can be a primitive data type, or an object.
 
 structure Value {
-  type // bool, nil, number, object
-  value
+  type  // bool, nil, number, object
+  value //
 }
+
+ObjFunction is a struct which has its own chunk of code.
+ObjString is an alias to string in glox.
+ObjNative is an alias to NativeFn
 
 Difference from clox: 
 1. VAL_UNDEFINED ValueType is added in glox, so that the zero value of Value will not show up with type VAL_BOOL.
@@ -120,6 +117,7 @@ The following is the most common bugs:
   - incorrect equality test
   - confusion in object and value conversion
   - forget to initialize a slot
+  - returning a value or a pointer to a value
 
 If I have to do it again, I will not translate the C code literally to Go, but just the concept.  For example, avoid using pointers.
 

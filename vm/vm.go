@@ -159,6 +159,13 @@ func call(closure *objval.ObjClosure, argCount uint) bool {
 func callValue(callee value.Value, argCount uint) bool {
 	if objval.IS_OBJ(callee) {
 		switch objval.OBJ_TYPE(callee) {
+		case object.OBJ_CLASS:
+			klass := objval.AS_CLASS(callee)
+			instanceObj := objval.NewInstance(klass)
+			instanceVal := objval.OBJ_VAL(object.Obj{Type_: object.OBJ_INSTANCE, Val: instanceObj})
+			vm.stackTop -= int(argCount + 1)
+			push(instanceVal)
+			return true
 		case object.OBJ_CLOSURE:
 			return call(objval.AS_CLOSURE(callee), argCount)
 		case object.OBJ_NATIVE:

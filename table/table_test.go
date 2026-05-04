@@ -3,7 +3,6 @@ package table
 import (
 	"testing"
 
-	"github.com/davidfung/glox/objval"
 	"github.com/davidfung/glox/value"
 )
 
@@ -41,20 +40,6 @@ func TestTable(t *testing.T) {
 	}
 	if len(table.entries) != len(table2.entries) {
 		t.Error("table copy error")
-	}
-
-	// table: hello, world
-	// table2: hello, world
-	val, ok = TableGet(&table, "hello")
-	if objval.AS_NUMBER(val) != float64(1) || !ok {
-		t.Error("Table entry retrival error")
-	}
-
-	// table: hello, world
-	// table2: hello, world
-	val, ok = TableGet(&table2, "world")
-	if objval.AS_NUMBER(val) != float64(1) || !ok {
-		t.Error("Table entry retrival error")
 	}
 
 	// table: hello, world
