@@ -59,6 +59,10 @@ func DisassembleInstruction(chun *chunk.Chunk, offset int) int {
 		return byteInstruction("OP_GET_UPVALUE", chun, offset)
 	case chunk.OP_SET_UPVALUE:
 		return byteInstruction("OP_SET_UPVALUE", chun, offset)
+	case chunk.OP_GET_PROPERTY:
+		return constantInstruction("OP_GET_PROPERTY", chun, offset)
+	case chunk.OP_SET_PROPERTY:
+		return constantInstruction("OP_SET_PROPERTY", chun, offset)
 	case chunk.OP_EQUAL:
 		return simpleInstruction("OP_EQUAL", offset)
 	case chunk.OP_GREATER:

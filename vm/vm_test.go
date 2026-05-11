@@ -25,6 +25,17 @@ func TestScripts(t *testing.T) {
 func initTestTable() []tests {
 	var tests = []tests{
 		{`
+		class Pair {}
+		var pair = Pair();
+		pair.first = 1;
+		pair.second = 2;
+		print pair.first + pair.second;
+		`, INTERPRET_OK},
+		{`
+		var obj = "not an instance";
+		print obj.field;
+		`, INTERPRET_RUNTIME_ERROR},
+		{`
 		class Brioche {}
 		print Brioche();
 		`, INTERPRET_OK},

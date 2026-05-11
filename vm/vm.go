@@ -380,6 +380,34 @@ func run() InterpretResult {
 		case chunk.OP_SET_UPVALUE:
 			slot := readByte()
 			*frame.closure.Upvalues[slot].Location = peek(0)
+		case chunk.OP_GET_PROPERTY:
+			if !objval.IS_INSTANCE(peek(0)) {
+				runtimeError("Only instances have properties.")
+				return INTERPRET_RUNTIME_ERROR
+			}
+
+			instance := objval.AS_INSTANCE(peek(0))
+			name := readString()
+
+			value, ok := table.TableGet(&instance.Fields, name)
+			if ok {
+				pop() // instance
+				push(value)
+				break
+			}
+
+			runtimeError("Undefined property '%s'.", name)
+			return INTERPRET_RUNTIME_ERROR
+		case chunk.OP_SET_PROPERTY:
+			if !objval.IS_INSTANCE(peek(1)) {
+				runtimeError("Only instances have fields.")
+				return INTERPRET_RUNTIME_ERROR
+			}
+			instance := objval.AS_INSTANCE(peek(1))
+			table.TableSet(&instance.Fields, readString(), peek(0))
+			value := pop() // field value
+			pop()          // instance
+			push(value)    // field value
 		case chunk.OP_EQUAL:
 			a := pop()
 			b := pop()

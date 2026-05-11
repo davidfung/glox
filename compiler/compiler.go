@@ -327,6 +327,19 @@ func call(canAssign bool) {
 	emitBytes(chunk.OP_CALL, argCount)
 }
 
+func dot(canAssign bool) {
+	//TODO
+	consume(scanner.TOKEN_IDENTIFIER, "Expect property name after '.'.")
+	name := identifierConstant(parser.previous)
+
+	if canAssign && match(scanner.TOKEN_EQUAL) {
+		expression()
+		emitBytes(chunk.OP_SET_PROPERTY, name)
+	} else {
+		emitBytes(chunk.OP_GET_PROPERTY, name)
+	}
+}
+
 func literal(canAssign bool) {
 	switch parser.previous.Type {
 	case scanner.TOKEN_FALSE:
@@ -956,6 +969,7 @@ func getRule(tokenType scanner.TokenType) ParseRule {
 	return rules[tokenType]
 }
 
+// ParseRule { prefix, infix, precedence }
 func initParseRules() {
 	rules = []ParseRule{
 		scanner.TOKEN_LEFT_PAREN:    {grouping, call, PREC_CALL},
@@ -963,7 +977,7 @@ func initParseRules() {
 		scanner.TOKEN_LEFT_BRACE:    {nil, nil, PREC_NONE},
 		scanner.TOKEN_RIGHT_BRACE:   {nil, nil, PREC_NONE},
 		scanner.TOKEN_COMMA:         {nil, nil, PREC_NONE},
-		scanner.TOKEN_DOT:           {nil, nil, PREC_NONE},
+		scanner.TOKEN_DOT:           {nil, dot, PREC_CALL},
 		scanner.TOKEN_MINUS:         {unary, binary, PREC_TERM},
 		scanner.TOKEN_PLUS:          {nil, binary, PREC_TERM},
 		scanner.TOKEN_SEMICOLON:     {nil, nil, PREC_NONE},
