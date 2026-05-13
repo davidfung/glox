@@ -328,7 +328,6 @@ func call(canAssign bool) {
 }
 
 func dot(canAssign bool) {
-	//TODO
 	consume(scanner.TOKEN_IDENTIFIER, "Expect property name after '.'.")
 	name := identifierConstant(parser.previous)
 
@@ -681,7 +680,6 @@ func str(canAssign bool) {
 }
 
 func namedVariable(token scanner.Token, canAssign bool) {
-	// arg := identifierConstant(token)
 	var getOp, setOp chunk.OpCode
 	var arg int = resolveLocal(current, &token)
 	if arg != (-1) {
