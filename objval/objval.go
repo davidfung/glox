@@ -13,7 +13,8 @@ import (
 )
 
 type ObjClass struct {
-	Name object.ObjString
+	Name    object.ObjString
+	Methods table.Table
 }
 
 type ObjInstance struct {
@@ -252,6 +253,7 @@ func printObject(val value.Value) {
 func NewClass(name object.ObjString) *ObjClass {
 	klass := new(ObjClass)
 	klass.Name = name
+	table.InitTable(&klass.Methods)
 	return klass
 }
 
