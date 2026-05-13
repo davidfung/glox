@@ -425,16 +425,34 @@ func function(type_ FunctionType) {
 	}
 }
 
+func method() {
+	consume(scanner.TOKEN_IDENTIFIER, "Expect method name.")
+	constant := identifierConstant(parser.previous)
+
+	type_ := TYPE_FUNCTION
+	function(type_)
+	emitBytes(chunk.OP_METHOD, constant)
+}
+
 func classDeclaration() {
 	consume(scanner.TOKEN_IDENTIFIER, "Expect class name.")
+	className := parser.previous
 	nameConstant := identifierConstant(parser.previous)
 	declareVariable()
 
 	emitBytes(chunk.OP_CLASS, nameConstant)
 	defineVariable(nameConstant)
 
+	namedVariable(className, false)
 	consume(scanner.TOKEN_LEFT_BRACE, "Expect '{' before class body.")
+	for {
+		if check(scanner.TOKEN_RIGHT_BRACE) || check(scanner.TOKEN_EOF) {
+			break
+		}
+		method()
+	}
 	consume(scanner.TOKEN_RIGHT_BRACE, "Expect '}' after class body.")
+	emitByte(chunk.OP_POP)
 }
 
 func funDeclaration() {
