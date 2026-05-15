@@ -229,6 +229,13 @@ func closeUpvalues(last *value.Value) {
 	}
 }
 
+func defineMethod(name object.ObjString) {
+	method := peek(0)
+	klass := objval.AS_CLASS(peek(1))
+	table.TableSet(&klass.Methods, name, method)
+	pop() // method
+}
+
 func isFalsey(val value.Value) bool {
 	return objval.IS_NIL(val) || objval.IS_BOOL(val) && !objval.AS_BOOL(val)
 }
@@ -511,6 +518,8 @@ func run() InterpretResult {
 			klass := objval.NewClass(readString())
 			obj := object.Obj{Type_: object.OBJ_CLASS, Val: klass}
 			push(objval.OBJ_VAL(obj))
+		case chunk.OP_METHOD:
+			defineMethod(readString())
 		}
 	}
 }
