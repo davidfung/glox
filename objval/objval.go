@@ -22,6 +22,11 @@ type ObjInstance struct {
 	Fields table.Table
 }
 
+type ObjBoundMethod struct {
+	Receiver value.Value
+	Method   *ObjClosure
+}
+
 type ObjClosure struct {
 	Function     object.ObjFunction
 	Upvalues     []*ObjUpvalue
@@ -66,7 +71,7 @@ func IS_OBJ(v value.Value) bool {
 	return v.Type_ == value.VAL_OBJ
 }
 
-func IS_Class(v value.Value) bool {
+func IS_CLASS(v value.Value) bool {
 	return IsObjType(v, object.OBJ_CLASS)
 }
 
@@ -100,6 +105,18 @@ func AS_OBJ(v value.Value) object.Obj {
 		panic("Error: AS_OBJ() expects an object value.Value")
 	}
 	return obj
+}
+
+func AS_BOUND_METHOD(v value.Value) *ObjBoundMethod {
+	obj, ok := v.Val.(object.Obj)
+	if !ok {
+		panic("Error: AS_BOUND_METHOD() expects an object in a value.Value")
+	}
+	boundMethod, ok := obj.Val.(*ObjBoundMethod)
+	if !ok {
+		panic("Error: AS_BOUND_METHOD() expects a bound method object")
+	}
+	return boundMethod
 }
 
 func AS_CLASS(v value.Value) *ObjClass {
@@ -233,6 +250,8 @@ func ValuesEqual(a value.Value, b value.Value) bool {
 
 func printObject(val value.Value) {
 	switch OBJ_TYPE(val) {
+	case object.OBJ_BOUND_METHOD:
+		object.PrintFunction(AS_BOUND_METHOD(val).Method.Function)
 	case object.OBJ_CLASS:
 		fmt.Printf("%s", AS_CLASS(val).Name)
 	case object.OBJ_CLOSURE:
@@ -282,4 +301,11 @@ func NewInstance(klass *ObjClass) *ObjInstance {
 	instance.Klass = klass
 	table.InitTable(&instance.Fields)
 	return instance
+}
+
+func NewBoundMethod(receiver value.Value, method *ObjClosure) *ObjBoundMethod {
+	boundMethod := new(ObjBoundMethod)
+	boundMethod.Receiver = receiver
+	boundMethod.Method = method
+	return boundMethod
 }

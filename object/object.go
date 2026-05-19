@@ -11,6 +11,7 @@ type ObjType int
 
 const (
 	_ ObjType = iota
+	OBJ_BOUND_METHOD
 	OBJ_CLASS
 	OBJ_CLOSURE
 	OBJ_FUNCTION
