@@ -159,6 +159,9 @@ func call(closure *objval.ObjClosure, argCount uint) bool {
 func callValue(callee value.Value, argCount uint) bool {
 	if objval.IS_OBJ(callee) {
 		switch objval.OBJ_TYPE(callee) {
+		case object.OBJ_BOUND_METHOD:
+			bound := objval.AS_BOUND_METHOD(callee)
+			return call(bound.Method, argCount)
 		case object.OBJ_CLASS:
 			klass := objval.AS_CLASS(callee)
 			instanceObj := objval.NewInstance(klass)
@@ -181,6 +184,22 @@ func callValue(callee value.Value, argCount uint) bool {
 	runtimeError(("Can only call functions and classes."))
 	return false
 }
+
+func bindMethod(klass *objval.ObjClass, name object.ObjString) bool {
+	methodVal, ok := table.TableGet(&klass.Methods, name)
+	if !ok {
+		runtimeError("Undefined property '%s'.", name)
+		return false
+	}
+
+	method := objval.AS_CLOSURE(methodVal)
+	bound := objval.NewBoundMethod(peek(0), method)
+
+	pop() // instance
+	push(objval.OBJ_VAL(object.Obj{Type_: object.OBJ_BOUND_METHOD, Val: bound}))
+	return true
+}
+
 func captureUpvalue(local *value.Value) *objval.ObjUpvalue {
 	var prevUpvalue *objval.ObjUpvalue = nil
 	upvalue := vm.openUpvalues
@@ -403,8 +422,9 @@ func run() InterpretResult {
 				break
 			}
 
-			runtimeError("Undefined property '%s'.", name)
-			return INTERPRET_RUNTIME_ERROR
+			if !bindMethod(instance.Klass, name) {
+				return INTERPRET_RUNTIME_ERROR
+			}
 		case chunk.OP_SET_PROPERTY:
 			if !objval.IS_INSTANCE(peek(1)) {
 				runtimeError("Only instances have fields.")
