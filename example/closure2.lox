@@ -1,0 +1,15 @@
+fun test() {
+    var i = 0;
+    fun addOne() {
+        fun addTwo() {
+            i = i + 2;
+            return i;
+        }
+        i = i + 1;
+        return addTwo;
+    }
+    return addOne;
+}
+var f = test();
+var g = f();
+print g(); // should print 3
